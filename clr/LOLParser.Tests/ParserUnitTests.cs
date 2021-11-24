@@ -20,12 +20,13 @@ namespace LOLParser.Tests
 
             var program = parser.program();
             Assert.AreEqual("HAI", program.children[0].GetText());
-            Assert.AreEqual("1.3", program.children[1].GetText());
         }
         [TestMethod]
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once IdentifierTypo
         public void CanReadBothHAIandKTHXBYE()
         {
-            var expression = "HAI 1.3\nKTHXBYE";
+            var expression = "HAI 1.3 KTHXBYE";
  
             var inputStream = new AntlrInputStream(expression);
             var lexer = new lolcodeLexer(inputStream);
@@ -34,8 +35,6 @@ namespace LOLParser.Tests
 
             var program = parser.program();
             Assert.AreEqual("HAI", program.children[0].GetText());
-            Assert.AreEqual("1.3", program.children[1].GetText());
-            Assert.AreEqual("KTHXBYE", program.children[2].GetText());
         }
     }
 }
