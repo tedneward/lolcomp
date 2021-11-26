@@ -1,3 +1,3 @@
-HAI 1.3
+HAI
 VISIBLE "Hai world!"
 KTHXBYE

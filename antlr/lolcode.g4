@@ -32,14 +32,14 @@ Adapted from https://github.com/jynnantonix/lolcode/blob/master/BNFGrammar.txt
 grammar lolcode;
 
 program
-   : 'HAI' code_block? 'KTHXBYE'?
+   : opening code_block? 'KTHXBYE'?
    ;
-
-version
-   : '1.0'
-   | '1.1'
-   | '1.2'
-   | '1.3'
+   
+opening
+   : 'HAI'          // Assumption being whatever the latest version is
+   | 'HAI 1.0'
+   | 'HAI 1.1'
+   | 'HAI 1.2'
    ;
 
 code_block

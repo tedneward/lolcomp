@@ -8,17 +8,21 @@ namespace LOLParser.Tests
     [TestClass]
     public class ParserUnitTests
     {
-        [TestMethod]
-        public void CanInstantiateParser()
+        static lolcodeParser.ProgramContext Parse(string lolcode)
         {
-            var expression = "HAI 1.3";
- 
-            var inputStream = new AntlrInputStream(expression);
+            var inputStream = new AntlrInputStream(lolcode);
             var lexer = new lolcodeLexer(inputStream);
             var tokenStream = new CommonTokenStream(lexer);
             var parser = new lolcodeParser(tokenStream);
 
-            var program = parser.program();
+            return parser.program();
+        }
+        
+        [TestMethod]
+        public void CanInstantiateParser()
+        {
+            var text = "HAI 1.2";
+            var program = Parse(text);
             Assert.AreEqual("HAI", program.children[0].GetText());
         }
         [TestMethod]
@@ -26,15 +30,15 @@ namespace LOLParser.Tests
         // ReSharper disable once IdentifierTypo
         public void CanReadBothHAIandKTHXBYE()
         {
-            var expression = "HAI 1.3 KTHXBYE";
- 
-            var inputStream = new AntlrInputStream(expression);
-            var lexer = new lolcodeLexer(inputStream);
-            var tokenStream = new CommonTokenStream(lexer);
-            var parser = new lolcodeParser(tokenStream);
-
-            var program = parser.program();
+            var text = "HAI 1.2 KTHXBYE";
+            var program = Parse(text);
             Assert.AreEqual("HAI", program.children[0].GetText());
+        }
+
+        [TestMethod]
+        public void SingleLineCommentsShouldWork()
+        {
+            
         }
     }
 }
