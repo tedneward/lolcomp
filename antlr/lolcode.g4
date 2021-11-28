@@ -31,20 +31,15 @@ Adapted from https://github.com/jynnantonix/lolcode/blob/master/BNFGrammar.txt
 */
 grammar lolcode;
 
-program
-   : opening code_block? 'KTHXBYE'?
-   ;
+program: opening code_block? 'KTHXBYE'?;
    
 opening
-   : 'HAI'          // Assumption being whatever the latest version is
-   | 'HAI 1.0'
+   : 'HAI 1.0'
    | 'HAI 1.1'
    | 'HAI 1.2'
    ;
 
-code_block
-   : statement+
-   ;
+code_block: statement+;
 
 statement
    : loop
@@ -68,8 +63,8 @@ declaration
    ;
 
 comment
-   : 'BTW' STRING
-   | 'OBTW' STRING 'TLDR'
+   : 'BTW' LABEL* NEWLINE
+   | 'OBTW' LABEL* 'TLDR'
    ;
 
 print_block
@@ -199,6 +194,10 @@ ATOM
 
 STRING
    : '"' ('\'"' | ~ '"')* '"'
+   ;
+
+NEWLINE
+   : [\r\n]
    ;
 
 WS
