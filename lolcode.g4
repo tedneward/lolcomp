@@ -1,32 +1,4 @@
 /*
-BSD License
-Copyright (c) 2016, Tom Everett
-All rights reserved.
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-3. Neither the name of Tom Everett nor the names of its contributors
-   may be used to endorse or promote products derived from this software
-   without specific prior written permission.
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/*
 Adapted from https://github.com/jynnantonix/lolcode/blob/master/BNFGrammar.txt
 */
 grammar lolcode;
@@ -37,24 +9,23 @@ opening
    : 'HAI 1.0'
    | 'HAI 1.1'
    | 'HAI 1.2'
+   | 'HAI'     // defaults to 1.2
    ;
 
 code_block: statement+;
 
 statement
-   : loop
-   | declaration
-   | comment
+   : declaration
    | print_block
+   | expression
+   /*
+   | loop
+   | comment
    | if_block
    | input_block
    | func_decl
    | assignment
-   | expression
-   ;
-
-loop
-   : 'IM IN YR' LABEL 'WILE' expression code_block 'IM OUTTA YR' LABEL
+   */
    ;
 
 declaration
@@ -62,13 +33,18 @@ declaration
    | 'I HAS A' LABEL 'ITZ' < value >
    ;
 
+print_block
+   : 'VISIBLE' expression* 'MKAY?'?
+   ;
+
+/*
+loop
+   : 'IM IN YR' LABEL 'WILE' expression code_block 'IM OUTTA YR' LABEL
+   ;
+
 comment
    : 'BTW' LABEL* NEWLINE
    | 'OBTW' LABEL* 'TLDR'
-   ;
-
-print_block
-   : 'VISIBLE' expression* 'MKAY?'?
    ;
 
 if_block
@@ -93,9 +69,12 @@ func_decl
 assignment
    : LABEL 'R' expression
    ;
+*/
 
 expression
-   : equals
+   : 
+   /*
+   equals
    | both
    | not_equals
    | greater
@@ -111,10 +90,12 @@ expression
    | any
    | not
    | func
+   | 
+   */ATOM
    | LABEL
-   | ATOM
    ;
 
+/*
 equals
    : 'BOTH SAEM' expression 'AN' expression
    ;
@@ -178,9 +159,10 @@ not
 func
    : LABEL expression+ 'MKAY?'
    ;
+*/
 
 LABEL
-   : ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_')+
+   : ('a' .. 'z' | 'A' .. 'Z') ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_')+
    ;
 
 ATOM

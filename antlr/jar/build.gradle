@@ -1,0 +1,41 @@
+plugins {
+    id 'java-library'
+    id 'antlr'
+}
+
+repositories {
+    mavenCentral()
+}
+
+def antlrPackage = 'com.tedneward.lolcode'
+def antlrPackagePath = antlrPackage.replaceAll('\\.', '/')
+
+dependencies {
+    antlr 'org.antlr:antlr4:4.10.1'
+    implementation 'org.antlr:antlr4-runtime:4.10.1'
+
+    implementation 'com.google.guava:guava:31.0.1-jre'
+
+    api 'org.apache.commons:commons-math3:3.6.1'
+}
+
+// Antlr stuff
+//
+// Standard ANTLR block
+// Note: outputDirectory has to point to the *exact* directory, package names and all
+generateGrammarSource {
+    maxHeapSize = "64m"
+    arguments += [ "-visitor",
+                   "-long-messages",
+                   "-package", antlrPackage,
+                   "-Xexact-output-dir",
+                   "../../../../../lolcode.g4"
+                   ]
+    outputDirectory = file("${projectDir}/src/main/java/${antlrPackagePath}")
+}
+compileJava {
+    dependsOn generateGrammarSource
+}
+clean {
+    delete "${projectDir}/src/main/java/"
+}

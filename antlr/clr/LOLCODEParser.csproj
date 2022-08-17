@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <NoWarn>3021</NoWarn>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Antlr4.Runtime.Standard" Version="4.10.1" />
+  </ItemGroup>
+
+  <Target Name="GenerateANTLRSources" BeforeTargets="BeforeResGen" DependsOnTargets="PreBuildEvent">
+    <Message Text="Generate ANTLR C# files"/>
+    <Exec Command="antlr ../../lolcode.g4 -Xexact-output-dir -o Generated -Dlanguage=CSharp -package LOLCODEParser -visitor" />
+    <ItemGroup>
+      <FileWrites Include="Generated/**" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CleanGeneratedFiles" BeforeTargets="Clean">
+    <RemoveDir Directories="Generated" />
+  </Target>
+
+</Project>
