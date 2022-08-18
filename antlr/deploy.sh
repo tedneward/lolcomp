@@ -1,8 +1,9 @@
 # Deploy to JVM-based 
-cp jar/build/libs/antlrcalc.jar ../java/lib/libs
-cp jar/build/libs/antlrcalc.jar ../kotlin/lib/libs
+echo ====== Deploying JAR...
+cp jar/build/libs/lolcodeParser.jar ../java/lib/libs
+cp jar/build/libs/lolcodeParser.jar ../kotlin/lib/libs
 
 # Deploy to CLR-based
-cp clr/bin/Debug/net6.0/ANTLRCalcParser.dll ../csharp/lib
-#cp clr/bin/Debug/net6.0/ANTLRCalcParser.dll ../fsharp/.....
-
+echo ====== Deploying assembly...
+cp clr/bin/Debug/net6.0/lolcodeParser.dll ../csharp/lib
+#cp clr/bin/Debug/net6.0/lolcodeParser.dll ../fsharp/.....

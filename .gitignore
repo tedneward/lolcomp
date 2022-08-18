@@ -1,3 +1,11 @@
+.antlr
+
+bin/
+obj/
+antlr/code/
+antr/jar/src/main/java/
+antlr/clr/Generated/
+
 # Compiled class file
 *.class
 

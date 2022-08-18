@@ -3,13 +3,16 @@ Adapted from https://github.com/jynnantonix/lolcode/blob/master/BNFGrammar.txt
 */
 grammar lolcode;
 
-program: opening code_block? 'KTHXBYE'?;
+program: opening code_block? 'KTHXBYE'? EOF;
    
 opening
-   : 'HAI 1.0'
-   | 'HAI 1.1'
-   | 'HAI 1.2'
-   | 'HAI'     // defaults to 1.2
+   : 'HAI' version?
+   ;
+
+version
+   : '1.0'
+   | '1.1'
+   | '1.2'
    ;
 
 code_block: statement+;
@@ -19,12 +22,12 @@ statement
    | print_block
    | expression
    /*
+   | assignment
    | loop
    | comment
    | if_block
    | input_block
    | func_decl
-   | assignment
    */
    ;
 
@@ -162,7 +165,7 @@ func
 */
 
 LABEL
-   : ('a' .. 'z' | 'A' .. 'Z') ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_')+
+   : ('a' .. 'z' | 'A' .. 'Z') ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_')*
    ;
 
 ATOM

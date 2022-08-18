@@ -1,0 +1,12 @@
+/Users/tedneward/Projects/lolcomp.git/antlr/clr/bin/Debug/net6.0/LOLCODEParser.deps.json
+/Users/tedneward/Projects/lolcomp.git/antlr/clr/bin/Debug/net6.0/LOLCODEParser.dll
+/Users/tedneward/Projects/lolcomp.git/antlr/clr/bin/Debug/net6.0/ref/LOLCODEParser.dll
+/Users/tedneward/Projects/lolcomp.git/antlr/clr/bin/Debug/net6.0/LOLCODEParser.pdb
+/Users/tedneward/Projects/lolcomp.git/antlr/clr/obj/Debug/net6.0/LOLCODEParser.csproj.AssemblyReference.cache
+/Users/tedneward/Projects/lolcomp.git/antlr/clr/obj/Debug/net6.0/LOLCODEParser.GeneratedMSBuildEditorConfig.editorconfig
+/Users/tedneward/Projects/lolcomp.git/antlr/clr/obj/Debug/net6.0/LOLCODEParser.AssemblyInfoInputs.cache
+/Users/tedneward/Projects/lolcomp.git/antlr/clr/obj/Debug/net6.0/LOLCODEParser.AssemblyInfo.cs
+/Users/tedneward/Projects/lolcomp.git/antlr/clr/obj/Debug/net6.0/LOLCODEParser.csproj.CoreCompileInputs.cache
+/Users/tedneward/Projects/lolcomp.git/antlr/clr/obj/Debug/net6.0/LOLCODEParser.dll
+/Users/tedneward/Projects/lolcomp.git/antlr/clr/obj/Debug/net6.0/ref/LOLCODEParser.dll
+/Users/tedneward/Projects/lolcomp.git/antlr/clr/obj/Debug/net6.0/LOLCODEParser.pdb

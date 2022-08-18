@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interpreter", "Interpreter\Interpreter.csproj", "{4A518A35-B9AA-4D1E-B732-D565E53EF915}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterpreterTests", "InterpreterTests\InterpreterTests.csproj", "{18111AC3-91AF-40EF-912F-7642D61133C6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4A518A35-B9AA-4D1E-B732-D565E53EF915}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A518A35-B9AA-4D1E-B732-D565E53EF915}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A518A35-B9AA-4D1E-B732-D565E53EF915}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A518A35-B9AA-4D1E-B732-D565E53EF915}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18111AC3-91AF-40EF-912F-7642D61133C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18111AC3-91AF-40EF-912F-7642D61133C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18111AC3-91AF-40EF-912F-7642D61133C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18111AC3-91AF-40EF-912F-7642D61133C6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
