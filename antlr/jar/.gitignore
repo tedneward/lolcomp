@@ -3,3 +3,6 @@
 
 # Ignore Gradle build output directory
 build
+
+# Ignore generated source; all source is generated from g4
+jar/src/main/java

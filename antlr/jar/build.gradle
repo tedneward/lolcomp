@@ -29,7 +29,7 @@ generateGrammarSource {
                    "-long-messages",
                    "-package", antlrPackage,
                    "-Xexact-output-dir",
-                   "../../../../../lolcode.g4"
+                   "../../../../lolcode.g4"
                    ]
     outputDirectory = file("${projectDir}/src/main/java/${antlrPackagePath}")
 }
