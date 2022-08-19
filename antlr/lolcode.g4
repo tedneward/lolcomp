@@ -1,5 +1,5 @@
 /*
-Adapted from https://github.com/jynnantonix/lolcode/blob/master/BNFGrammar.txt
+Reference: https://github.com/jynnantonix/lolcode/blob/master/BNFGrammar.txt
 */
 grammar lolcode;
 
@@ -32,12 +32,12 @@ statement
    ;
 
 declaration
-   : 'I HAS A' LABEL
-   | 'I HAS A' LABEL 'ITZ' < value >
+   : 'I HAS A' LABEL 
+   | 'I HAS A' LABEL 'ITZ' expression
    ;
 
 print_block
-   : 'VISIBLE' expression* 'MKAY?'?
+   : 'VISIBLE' expression* 'MKAY?'? 
    ;
 
 /*
@@ -182,10 +182,10 @@ STRING
    ;
 
 NEWLINE
-   : [\r\n]
+   : ('\r'? '\n' | '\r' | '\n')+ -> skip
    ;
 
 WS
-   : [ \r\n] -> skip
+   : (' ' | '\t') -> skip
    ;
 
