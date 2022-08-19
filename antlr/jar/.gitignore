@@ -5,4 +5,4 @@
 build
 
 # Ignore generated source; all source is generated from g4
-jar/src/main/java
+java/src/main/java
