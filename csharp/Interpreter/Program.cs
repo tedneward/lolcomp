@@ -1,6 +1,7 @@
 ﻿namespace Interpreter;
 
 using System.Collections.Generic;
+using System.IO;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
@@ -29,6 +30,18 @@ public class Declaration : ASTNode
     public object Value { get; set; }
     public Declaration() { Name = ""; Value = ""; }
 }
+public class Label : ASTNode
+{
+    public string Name { get; set; }
+    public Label() { Name = ""; }
+}
+public class Atom : ASTNode
+{
+    public object Value { get; set; }
+    public Atom() { Value = ""; }
+}
+public class PrintExpr : ASTNode
+{ }
 
 
 public class ASTBuilder : lolcodeBaseListener
@@ -73,5 +86,68 @@ public class ASTBuilder : lolcodeBaseListener
         decl.Value = ctx.expression().GetText();
 
         currentBlock.Peek().Children.Add(decl);
+    }
+}
+
+public class Interpreter
+{
+    public System.IO.TextWriter Out { get; set; }
+    public System.IO.TextReader In { get; set; }
+
+    public Interpreter()
+    {
+        Out = System.Console.Out;
+        In = System.Console.In;
+    }
+
+    public void Run(Program program)
+    {
+        RunCodeBlock(program.CodeBlock);
+    }
+    public void RunCodeBlock(CodeBlock block)
+    {
+        // Nothing to do for empty code blocks
+        if (block == null || block.Children.Count == 0)
+            return;
+
+        var variables = new Dictionary<string, object>();
+        foreach (var node in block.Children)
+        {
+            if (node is Declaration) 
+            {
+                var decl = (Declaration)node;
+                variables[decl.Name] = decl.Value;
+            }
+            else if (node is PrintExpr)
+            {
+                var print = (PrintExpr)node;
+                var message = "";
+                foreach (var expr in print.Children)
+                {
+                    if (expr is Atom)
+                    {
+                        message += ((Atom)expr).Value.ToString();
+                    }
+                    else if (expr is Label)
+                    {
+                        message += variables[((Label)expr).Name].ToString();
+                    }
+                    else
+                        throw new Exception("Unrecognized expr: " + expr);
+                    
+                    message += " ";
+                        // TODO: Get rid of this trailing space
+                }
+                Out.WriteLine(message);
+            }
+            else if (node is CodeBlock)
+            {
+                RunCodeBlock((CodeBlock)node);
+            }
+            else
+            {
+                throw new Exception("Unrecognized node: " + node);
+            }
+        }
     }
 }

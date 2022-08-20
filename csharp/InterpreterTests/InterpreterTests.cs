@@ -4,26 +4,39 @@ namespace InterpreterTests;
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using LOLCODEParser;
 using Interpreter;
 
 [TestClass]
-public class ASTTests
+public class InterpreterTests
 {
     [TestMethod]
     public void EmptyProgram()
     {
+        var input = "";
+        var interp = new Interpreter();
+        interp.In = new StringReader(input);
+        interp.Out = new StringWriter();
+
         /*
         HAI
         KTHXBYE
          */
         var program = new Program();
-        Assert.IsNull(program.CodeBlock);
+        interp.Run(program);
+
+        Assert.AreEqual("", interp.Out.ToString());
     }
 
     [TestMethod]
     public void SimplestProgram()
     {
+        var input = "";
+        var interp = new Interpreter();
+        interp.In = new StringReader(input);
+        interp.Out = new StringWriter();
+
         /*
         HAI 1.2
         I HAZ A var ITZ 0
@@ -34,15 +47,18 @@ public class ASTTests
         program.Children.Add(new CodeBlock());
         program.CodeBlock.Children.Add(new Declaration() { Name = "var", Value = "0"});
 
-        Assert.AreEqual(1, program.CodeBlock.Children.Count);
-        Assert.AreEqual(typeof(Declaration), program.CodeBlock.Children[0].GetType());
-        Assert.AreEqual("var", ((Declaration)program.CodeBlock.Children[0]).Name);
-        Assert.AreEqual("0", ((Declaration)program.CodeBlock.Children[0]).Value);
+        interp.Run(program);
+        Assert.AreEqual("", interp.Out.ToString());
     }
 
     [TestMethod]
     public void SimplestPrintingProgram()
     {
+        var input = "";
+        var interp = new Interpreter();
+        interp.In = new StringReader(input);
+        interp.Out = new StringWriter();
+
         /*
         HAI 1.2
         I HAZ A var ITZ 0
@@ -58,10 +74,8 @@ public class ASTTests
         print.Children.Add(new Label() { Name = "var"});
         program.CodeBlock.Children.Add(print);
 
-        Assert.AreEqual(2, program.CodeBlock.Children.Count);
-
-        Assert.AreEqual(typeof(Declaration), program.CodeBlock.Children[0].GetType());
-        Assert.AreEqual("var", ((Declaration)program.CodeBlock.Children[0]).Name);
-        Assert.AreEqual(0, ((Declaration)program.CodeBlock.Children[0]).Value);
+        interp.Run(program);
+        Assert.AreEqual("The var is 0 \n", interp.Out.ToString());
+            // TODO: Test for last-space being trimmed
     }
 }
