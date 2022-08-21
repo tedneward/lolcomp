@@ -32,12 +32,12 @@ public class ASTTests
         var program = new Program();
         program.Version = "1.2";
         program.Children.Add(new CodeBlock());
-        program.CodeBlock.Children.Add(new Declaration() { Name = "var", Value = "0"});
+        program.CodeBlock.Children.Add(new Declaration() { Name = "var", InitialValue = "0"});
 
         Assert.AreEqual(1, program.CodeBlock.Children.Count);
         Assert.AreEqual(typeof(Declaration), program.CodeBlock.Children[0].GetType());
         Assert.AreEqual("var", ((Declaration)program.CodeBlock.Children[0]).Name);
-        Assert.AreEqual("0", ((Declaration)program.CodeBlock.Children[0]).Value);
+        Assert.AreEqual("0", ((Declaration)program.CodeBlock.Children[0]).InitialValue);
     }
 
     [TestMethod]
@@ -52,7 +52,7 @@ public class ASTTests
         var program = new Program();
         program.Version = "1.2";
         program.Children.Add(new CodeBlock());
-        program.CodeBlock.Children.Add(new Declaration() { Name = "var", Value = 0});
+        program.CodeBlock.Children.Add(new Declaration() { Name = "var", InitialValue = "0"});
         var print = new PrintExpr();
         print.Children.Add(new Atom() { Value = "The var is"});
         print.Children.Add(new Label() { Name = "var"});
@@ -62,6 +62,6 @@ public class ASTTests
 
         Assert.AreEqual(typeof(Declaration), program.CodeBlock.Children[0].GetType());
         Assert.AreEqual("var", ((Declaration)program.CodeBlock.Children[0]).Name);
-        Assert.AreEqual(0, ((Declaration)program.CodeBlock.Children[0]).Value);
+        Assert.AreEqual("0", ((Declaration)program.CodeBlock.Children[0]).InitialValue);
     }
 }

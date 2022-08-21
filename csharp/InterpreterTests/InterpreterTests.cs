@@ -45,7 +45,7 @@ public class InterpreterTests
         var program = new Program();
         program.Version = "1.2";
         program.Children.Add(new CodeBlock());
-        program.CodeBlock.Children.Add(new Declaration() { Name = "var", Value = "0"});
+        program.CodeBlock.Children.Add(new Declaration() { Name = "var", InitialValue = "0"});
 
         interp.Run(program);
         Assert.AreEqual("", interp.Out.ToString());
@@ -68,14 +68,13 @@ public class InterpreterTests
         var program = new Program();
         program.Version = "1.2";
         program.Children.Add(new CodeBlock());
-        program.CodeBlock.Children.Add(new Declaration() { Name = "var", Value = 0});
+        program.CodeBlock.Children.Add(new Declaration() { Name = "var", InitialValue = "0"});
         var print = new PrintExpr();
-        print.Children.Add(new Atom() { Value = "The var is"});
+        print.Children.Add(new Atom() { Value = "The var is "});
         print.Children.Add(new Label() { Name = "var"});
         program.CodeBlock.Children.Add(print);
 
         interp.Run(program);
-        Assert.AreEqual("The var is 0 \n", interp.Out.ToString());
-            // TODO: Test for last-space being trimmed
+        Assert.AreEqual("The var is 0\n", interp.Out.ToString());
     }
 }

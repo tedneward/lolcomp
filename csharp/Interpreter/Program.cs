@@ -11,6 +11,12 @@ public class ASTNode
 {
     public List<ASTNode> Children { get; private set; }
     public ASTNode() { Children = new List<ASTNode>(); }
+    public override string ToString()
+    {
+        string listrep = "(";
+        Children.ForEach( (node) => { listrep += node.ToString(); } );
+        return listrep + ")";
+    }
 }
 public class Program : ASTNode
 {
@@ -21,27 +27,36 @@ public class Program : ASTNode
         get { return Children.Count > 0 ? (CodeBlock)Children[0] : null; }
     }
     public Program() { Version = ""; }
+
+    public override string ToString()
+    {
+        return String.Format("(program version:{0} {1})", 
+            Version, CodeBlock != null ? CodeBlock.ToString() : "()");
+    }
 }
 public class CodeBlock : ASTNode
 { }
 public class Declaration : ASTNode
 {
-    public string Name { get; set; }
-    public object Value { get; set; }
-    public Declaration() { Name = ""; Value = ""; }
+    public string Name { get; set; } = "";
+    public string InitialValue { get; set; } = "";
+    public override string ToString() { return String.Format("(decl {0} {1})", Name, InitialValue); }
 }
 public class Label : ASTNode
 {
     public string Name { get; set; }
     public Label() { Name = ""; }
+    public override string ToString() { return String.Format("(LABEL {0})", Name); }
 }
 public class Atom : ASTNode
 {
-    public object Value { get; set; }
-    public Atom() { Value = ""; }
+    public string Value { get; set; } = "";
+    public override string ToString() { return String.Format("(ATOM {0})", Value); }
 }
 public class PrintExpr : ASTNode
-{ }
+{ 
+    public override string ToString() { return String.Format("(print {0})", base.ToString()); }
+}
 
 
 public class ASTBuilder : lolcodeBaseListener
@@ -53,7 +68,10 @@ public class ASTBuilder : lolcodeBaseListener
 
     override public void EnterProgram(lolcodeParser.ProgramContext ctx) 
     {
-        program.Version = ctx.opening().version().GetText();
+        if (ctx.opening().version() != null)
+            program.Version = ctx.opening().version().GetText();
+        else
+            program.Version = "1.2"; // Assume latest
     }
 
     override public void EnterCode_block(lolcodeParser.Code_blockContext ctx)
@@ -83,9 +101,33 @@ public class ASTBuilder : lolcodeBaseListener
         Declaration decl = new Declaration();
 
         decl.Name = ctx.LABEL().GetText();
-        decl.Value = ctx.expression().GetText();
+        if (ctx.expression() != null)
+            decl.InitialValue = ctx.expression().GetText();
 
         currentBlock.Peek().Children.Add(decl);
+    }
+
+    override public void EnterPrint_block(lolcodeParser.Print_blockContext ctx)
+    {
+        PrintExpr print = new PrintExpr();
+
+        foreach (var expr in ctx.expression())
+        {
+            if (expr.ATOM() != null)
+            {
+                print.Children.Add(new Atom() { Value = expr.ATOM().GetText() });
+            }
+            else if (expr.LABEL() != null)
+            {
+                print.Children.Add(new Label() { Name = expr.LABEL().GetText() });
+            }
+            else
+            {
+                throw new Exception("Unrecognized child of print_block " + expr);
+            }
+        }
+
+        currentBlock.Peek().Children.Add(print);
     }
 }
 
@@ -98,6 +140,20 @@ public class Interpreter
     {
         Out = System.Console.Out;
         In = System.Console.In;
+    }
+
+    public void Execute(string code)
+    {
+        System.Console.WriteLine("Executing {0}", code);
+
+        lolcodeLexer lexer = new lolcodeLexer(CharStreams.fromString(code));
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        lolcodeParser parser = new lolcodeParser(tokens);
+        var builder = new ASTBuilder();
+        ParseTreeWalker.Default.Walk(builder, parser.program());
+        System.Console.WriteLine("AST: {0}", builder.program.ToString());
+
+        Run(builder.program);
     }
 
     public void Run(Program program)
@@ -116,7 +172,7 @@ public class Interpreter
             if (node is Declaration) 
             {
                 var decl = (Declaration)node;
-                variables[decl.Name] = decl.Value;
+                variables[decl.Name] = decl.InitialValue;
             }
             else if (node is PrintExpr)
             {
@@ -126,7 +182,13 @@ public class Interpreter
                 {
                     if (expr is Atom)
                     {
-                        message += ((Atom)expr).Value.ToString();
+                        var value = ((Atom)expr).Value;
+                        if (value.StartsWith("\""))
+                        {
+                            // It's a literal string, with quotes, which we must strip off
+                            value = value.Trim('"');
+                        }
+                        message += value;
                     }
                     else if (expr is Label)
                     {
@@ -134,9 +196,6 @@ public class Interpreter
                     }
                     else
                         throw new Exception("Unrecognized expr: " + expr);
-                    
-                    message += " ";
-                        // TODO: Get rid of this trailing space
                 }
                 Out.WriteLine(message);
             }

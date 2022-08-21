@@ -19,14 +19,14 @@ code_block: statement+;
 
 statement
    : declaration
-   | print_block
    | expression
+   | print_block
+   | input_block
    /*
    | assignment
    | loop
    | comment
    | if_block
-   | input_block
    | func_decl
    */
    ;
@@ -38,6 +38,10 @@ declaration
 
 print_block
    : 'VISIBLE' expression* 'MKAY?'? 
+   ;
+
+input_block
+   : 'GIMMEH' LABEL
    ;
 
 /*
@@ -59,10 +63,6 @@ else_if_block
    : 'MEBBE' expression code_block else_if_block
    | 'NO WAI' code_block
    | 'MEBBE' expression code_block
-   ;
-
-input_block
-   : 'GIMMEH' LABEL
    ;
 
 func_decl
