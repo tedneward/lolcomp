@@ -9,28 +9,26 @@ using LOLCODEParser;
 
 public class ASTNode
 {
-    public List<ASTNode> Children { get; private set; }
-    public ASTNode() { Children = new List<ASTNode>(); }
+    public List<ASTNode> Children { get; private set; } = new List<ASTNode>();
     public override string ToString()
     {
-        string listrep = "(";
+        string listrep = "children:(";
         Children.ForEach( (node) => { listrep += node.ToString(); } );
         return listrep + ")";
     }
 }
 public class Program : ASTNode
 {
-    public string Version { get; set; }
+    public string Version { get; set; } = "";
     public CodeBlock CodeBlock 
     { 
         // By definition the code_block is the first child of program (if present)
         get { return Children.Count > 0 ? (CodeBlock)Children[0] : null; }
     }
-    public Program() { Version = ""; }
 
     public override string ToString()
     {
-        return String.Format("(program version:{0} {1})", 
+        return String.Format("(program version:{0} code_block:{1})", 
             Version, CodeBlock != null ? CodeBlock.ToString() : "()");
     }
 }
