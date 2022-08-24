@@ -59,4 +59,23 @@ class InterpreterTests {
         assertEquals(decl.name, "var")
         assertEquals(decl.initialValue, "0")
     }
+    @Test fun varExample() {
+        val code = readExampleFile("var.lol")
+        System.out.println(code)
+
+        val interp = Interpreter()
+        val outBuffer = java.io.ByteArrayOutputStream()
+        interp.ioOut = java.io.PrintStream(outBuffer)
+        interp.execute(code)
+
+        assertEquals(interp.program.codeBlock.children.size, 2)
+
+        val decl = interp.program.codeBlock.children.get(0) as Declaration
+        assertEquals(decl.name, "var")
+        assertEquals(decl.initialValue, "0")
+
+        assertTrue(interp.program.codeBlock.children.get(1) is Print)
+
+        assertEquals("The var is 0\n", outBuffer.toString())
+    }
 }
