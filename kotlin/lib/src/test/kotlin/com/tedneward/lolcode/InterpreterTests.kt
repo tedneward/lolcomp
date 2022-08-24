@@ -30,7 +30,7 @@ class InterpreterTests {
         return File("../../examples/${filename}").readText()
     }
 
-    @Test fun hai12() {
+    @Test fun hai12Example() {
         val code = readExampleFile("hai12.lol")
 
         val interp = Interpreter()
@@ -38,12 +38,25 @@ class InterpreterTests {
 
         assertEquals(interp.program.version, "1.2")
     }
-    @Test fun hai() {
+    @Test fun haiExample() {
         val code = readExampleFile("hai.lol")
 
         val interp = Interpreter()
         interp.execute(code)
 
         assertEquals(interp.program.version, "1.2")
+    }
+    @Test fun justvarExample() {
+        val code = readExampleFile("justvar.lol")
+        System.out.println(code)
+
+        val interp = Interpreter()
+        interp.execute(code)
+
+        assertEquals(interp.program.version, "1.2")
+        assertEquals(interp.program.codeBlock.children.size, 1)
+        val decl = interp.program.codeBlock.children.get(0) as Declaration
+        assertEquals(decl.name, "var")
+        assertEquals(decl.initialValue, "0")
     }
 }

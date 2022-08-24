@@ -3,13 +3,14 @@
  */
 package com.tedneward.lolcode
 
+import java.util.Stack
 import org.antlr.v4.runtime.*
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 
 // ====================================
 // Abstract Syntax Tree
-open class ASTNode(val children: List<ASTNode> = mutableListOf()) { 
+open class ASTNode(val children: MutableList<ASTNode> = mutableListOf()) { 
     override fun toString() : String {
         val mappedChildren = children.map { "(" + it.toString() + ")" }
         return "(${mappedChildren})"
@@ -21,12 +22,36 @@ class Program(var version: String = "", var codeBlock: CodeBlock = CodeBlock()) 
         return "(program version:${version} codeBlock:${codeBlock})"
     }
 }
+class Declaration() : ASTNode() { 
+    var name = ""
+    var initialValue = ""
+    override fun toString() : String {
+        return "(decl ${name} ${initialValue})"
+    }
+}
 
 class ASTBuilder() : lolcodeBaseListener() {
     val program = Program()
+    var blockStack = Stack<CodeBlock>()
 
-    override fun enterProgram(ctx : lolcodeParser.ProgramContext ) { 
+    override fun enterProgram(ctx : lolcodeParser.ProgramContext) { 
         program.version = if (ctx.opening().version() != null) ctx.opening().version().getText() else "1.2";
+    }
+    override fun enterCode_block(ctx : lolcodeParser.Code_blockContext) {
+        val codeBlock = if (blockStack.isEmpty()) program.codeBlock else CodeBlock()
+        blockStack.push(codeBlock)
+    }
+    override fun exitCode_block(ctx : lolcodeParser.Code_blockContext) {
+        blockStack.pop()
+    }
+    override fun enterDeclaration(ctx : lolcodeParser.DeclarationContext) {
+        val decl = Declaration()
+        
+        decl.name = ctx.LABEL().text
+        if (ctx.expression() != null)
+            decl.initialValue = ctx.expression().text
+
+        blockStack.peek().children.add(decl);
     }
 }
 
