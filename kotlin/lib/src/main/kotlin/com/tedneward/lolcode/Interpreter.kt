@@ -88,15 +88,28 @@ class ASTBuilder() : lolcodeBaseListener() {
 
 // ====================================
 // Interpreter
-class Variant(val value : Any?) {
-    val type = if (value != null) value::class else Void::class
+class Variant(public val value : Any? = null) {
+    public val type = if (value != null) value::class else Void::class
 
-    fun verifyUntyped() { if (type == Void::class) { throw Exception("Cannot cast an Untyped") } }
+    fun verifyUntyped() { if (type == Void::class) { throw Exception("CANT CONVER NOOB") } }
 
-    fun asBool() : Boolean { verifyUntyped(); return java.lang.Boolean.parseBoolean(value.toString()) }
+    fun asBoolean() : Boolean { 
+        verifyUntyped()
+        return when {
+            value is String && value.uppercase() == "TRUE" -> true
+            value is String && value.uppercase() == "FALSE" -> false
+            value is Number && value.toLong() == 0L -> false
+            value is Number && value.toLong() != 0L -> true
+            else -> false
+        }
+    }
     fun asInt64() : Long { verifyUntyped(); return java.lang.Long.parseLong(value.toString()) }
     fun asDouble() : Double { verifyUntyped(); return java.lang.Double.parseDouble(value.toString()) }
     fun asString() : String { verifyUntyped(); return value.toString() }
+
+    override fun toString() : String {
+        return if (value == null) "[NOOB]" else "[${value} (${value::class.qualifiedName})]"
+    }
 }
 class Interpreter {
     var program : Program = Program()
