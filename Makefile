@@ -1,10 +1,10 @@
-all: antlr test kotlin csharp java
+all: antlr test kotlin csharp
 
 # ======== ANTLR grammar-based source generation
 #
 antlr: antlrbuild antlrtest jarbuild clrbuild
 
-antlrbuild: lolcode.g4
+antlrbuild:
 	echo ========== Building ANTLR 
 	cd antlr; ./build.sh; cd ..
 
@@ -12,14 +12,25 @@ antlrtest: antlrbuild
 	echo ========== Testing ANTLR
 	cd antlr; ./test.sh; cd ..
 
-jarbuild: lolcode.g4
+jarbuild:
 	echo ========== Building ANTLR JAR
 	cd antlr/jar; gradle build; cd ../..
 
-clrbuild: lolcode.g4
+clrbuild:
 	echo ========== Building ANTLR CLR
 	cd antlr/clr; dotnet build; cd ../..
 
+# ========== Test everything
+#
+test: kotlintest csharptest javatest
+
+# ========== Clean everything
+#
+clean:
+	cd antlr; ./clean.sh; cd ..
+	cd kotlin; gradle clean; cd ..
+	cd csharp; dotnet clean; cd ..
+	cd java; gradle clean; cd ..
 
 # ========== Kotlin Interpreter
 #
@@ -43,7 +54,13 @@ csharptest: csharpbuild
 
 # ========== Java Interpreter
 #
-java:
+java: javabuild javatest
+
+javabuild: jarbuild
+	cd java; gradle build; cd ..
+
+javatest: javabuild
+	cd java; gradle test; cd ..
 
 # ========== F# Interpreter
 #
