@@ -9,6 +9,7 @@ repositories {
 
 def antlrPackage = 'com.tedneward.lolcode'
 def antlrPackagePath = antlrPackage.replaceAll('\\.', '/')
+def antlrPackageFile = file("${projectDir}/src/main/java/${antlrPackagePath}")
 
 dependencies {
     antlr 'org.antlr:antlr4:4.10.1'
@@ -21,21 +22,25 @@ dependencies {
 
 // Antlr stuff
 //
+tasks.register('copyGrammarSource', Copy) {
+    from '../lolcode.g4'
+    into 'src/main/antlr'
+}
 // Standard ANTLR block
-// Note: outputDirectory has to point to the *exact* directory, package names and all
 generateGrammarSource {
     maxHeapSize = "64m"
     arguments += [ "-visitor",
                    "-long-messages",
-                   "-package", antlrPackage,
-                   "-Xexact-output-dir",
-                   "../../../../lolcode.g4"
+                   "-package", antlrPackage
                    ]
-    outputDirectory = file("${projectDir}/src/main/java/${antlrPackagePath}")
+    outputDirectory = antlrPackageFile
+
+    dependsOn copyGrammarSource
 }
 compileJava {
     dependsOn generateGrammarSource
 }
 clean {
-    delete "${projectDir}/src/main/java/"
+    delete "${projectDir}/src/main/java"
+    delete "${projectDir}/src/main/antlr"
 }

@@ -129,6 +129,25 @@ public class ASTBuilder : lolcodeBaseListener
     }
 }
 
+// LOLCODE types can be strings, int64s, float64s, bools, or "untyped"
+public class Variant
+{
+    private object? value;
+    private Type type;
+
+    public Variant() { value = null; type = typeof(void); }
+    public Variant(bool bVal) { value = bVal; type = typeof(bool); }
+    public Variant(Int64 lVal) { value = lVal; type = typeof(long); }
+    public Variant(Double dVal) { value = dVal; type = typeof(double); }
+    public Variant(String sVal) { value = sVal; type = typeof(string); }
+
+    private void UntypedCheck() { if (type == typeof(void)) throw new Exception("Cannot cast from an Untyped value"); }
+    public bool AsBool() { UntypedCheck(); return Boolean.Parse(value.ToString()); }
+    public Int64 AsInt() { UntypedCheck(); return Int64.Parse(value.ToString()); }
+    public Double AsDouble() { UntypedCheck(); return Double.Parse(value.ToString()); }
+    public String AsString() { UntypedCheck(); return value.ToString(); }
+}
+
 public class Interpreter
 {
     public System.IO.TextWriter Out { get; set; }
