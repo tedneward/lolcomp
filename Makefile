@@ -1,4 +1,4 @@
-all: antlr test kotlin csharp
+all: antlr test kotlin csharp #java fsharp python ruby cpp
 
 # ======== ANTLR grammar-based source generation
 #
@@ -37,9 +37,12 @@ clean:
 kotlin: kotlinbuild kotlintest
 
 kotlinbuild: jarbuild
+	cp antlr/jar/build/libs/lolcodeparser.jar kotlin/engine/libs
+	echo ========== Building Kotlin Engine....
 	cd kotlin; gradle build; cd ..
 
 kotlintest: kotlinbuild
+	echo ========== Testing Kotlin Engine....
 	cd kotlin; gradle test; cd ..
 
 # ========== C# Interpreter
@@ -47,6 +50,7 @@ kotlintest: kotlinbuild
 csharp: csharpbuild csharptest
 
 csharpbuild: clrbuild
+	echo ========== Building Kotlin Engine....
 	cd csharp; dotnet build; cd ..
 
 csharptest: csharpbuild
