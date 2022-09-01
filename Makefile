@@ -50,6 +50,7 @@ kotlintest: kotlinbuild
 csharp: csharpbuild csharptest
 
 csharpbuild: clrbuild
+	cp antlr/clr/bin/Debug/net6.0/LOLCODEParser.dll csharp/lib
 	echo ========== Building Kotlin Engine....
 	cd csharp; dotnet build; cd ..
 

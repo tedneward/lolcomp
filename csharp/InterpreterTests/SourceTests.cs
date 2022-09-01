@@ -19,8 +19,8 @@ public class SourceInterpreterTests
     [TestMethod]
     public void hai()
     {
-        var input = "";
         var interp = new Interpreter();
+        var input = "";
         interp.In = new StringReader(input);
         interp.Out = new StringWriter();
 
@@ -28,12 +28,46 @@ public class SourceInterpreterTests
 
         Assert.AreEqual("", interp.Out.ToString());
     }
+    public void hai12()
+    {
+        var interp = new Interpreter();
+        var input = "";
+        interp.In = new StringReader(input);
+        interp.Out = new StringWriter();
 
+        interp.Execute(ReadExampleFile("hai12.lol"));
+
+        Assert.AreEqual("", interp.Out.ToString());
+    }
+    public void hello()
+    {
+        var interp = new Interpreter();
+        var input = "";
+        interp.In = new StringReader(input);
+        interp.Out = new StringWriter();
+
+        interp.Execute(ReadExampleFile("hello.lol"));
+
+        Assert.AreEqual("Hello world", interp.Out.ToString());
+    }
+
+    [TestMethod]
+    public void justvar()
+    {
+        var interp = new Interpreter();
+        var input = "";
+        interp.In = new StringReader(input);
+        interp.Out = new StringWriter();
+
+        interp.Execute(ReadExampleFile("justvar.lol"));
+
+        Assert.AreEqual("", interp.Out.ToString());
+    }
     [TestMethod]
     public void var()
     {
-        var input = "";
         var interp = new Interpreter();
+        var input = "";
         interp.In = new StringReader(input);
         interp.Out = new StringWriter();
 
