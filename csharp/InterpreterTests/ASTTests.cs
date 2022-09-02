@@ -2,9 +2,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace InterpreterTests;
 
-using System;
-using System.Collections.Generic;
-using LOLCODEParser;
 using Interpreter;
 
 [TestClass]

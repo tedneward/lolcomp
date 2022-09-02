@@ -137,6 +137,26 @@ public class ASTBuilder : lolcodeBaseListener
 
         currentBlock.Peek().Children.Add(print);
     }
+    public override void EnterInput_block([Antlr4.Runtime.Misc.NotNull] lolcodeParser.Input_blockContext context)
+    {
+        var input = new InputAST();
+
+        input.Label = context.LABEL().GetText();
+
+        currentBlock.Peek().Children.Add(input);
+    }
+    public override void EnterAssignment([Antlr4.Runtime.Misc.NotNull] lolcodeParser.AssignmentContext context)
+    {
+        var assign = new AssignmentAST();
+
+        assign.Label = context.LABEL().GetText();
+        assign.Expr = 
+            context.expression().ATOM() != null ? new AtomAST() { Value = context.expression().ATOM().GetText() } :
+            context.expression().LABEL() != null ? new LabelAST() { Name = context.expression().LABEL().GetText() } :
+            throw new Exception(String.Format("Unrecognized expression: {0}", context.expression())); 
+
+        currentBlock.Peek().Children.Add(assign);
+    }
 }
 
 // LOLCODE types can be strings, int64s, float64s, bools, or "untyped"
@@ -149,7 +169,12 @@ public class Variant
     public Variant(bool bVal) { value = bVal; type = typeof(bool); }
     public Variant(Int64 lVal) { value = lVal; type = typeof(long); }
     public Variant(Double dVal) { value = dVal; type = typeof(double); }
-    public Variant(String sVal) { value = sVal; type = typeof(string); }
+    public Variant(String sVal) { 
+        // Normalize the string--remove any leading/trailing quotes
+        value = sVal.StartsWith("\"") ? sVal.Trim('"') : sVal;
+        type = typeof(string); 
+
+    }
 
     private void UntypedCheck() { if (type == typeof(void)) throw new Exception("Cannot cast from an Untyped value"); }
     public bool AsBool() { UntypedCheck(); return Boolean.Parse(value.ToString()); }
@@ -193,13 +218,25 @@ public class Interpreter
         if (block == null || block.Children.Count == 0)
             return;
 
-        var variables = new Dictionary<string, object>();
+        var Evaluate = new Func<ExpressionAST, Dictionary<string,Variant>, Variant>(
+            (ExpressionAST expr, Dictionary<string, Variant> scope) => {
+            if (expr is LabelAST) {
+                return scope[((LabelAST)expr).Name];
+            }
+            if (expr is AtomAST) {
+                return new Variant(((AtomAST)expr).Value);
+            }
+
+            throw new Exception(String.Format("Unrecognized expression: {0}", expr));
+        });
+
+        var variables = new Dictionary<string, Variant>();
         foreach (var node in block.Children)
         {
             if (node is DeclarationAST) 
             {
                 var decl = (DeclarationAST)node;
-                variables[decl.Name] = decl.InitialValue;
+                variables[decl.Name] = new Variant(decl.InitialValue);
             }
             else if (node is PrintExprAST)
             {
@@ -207,7 +244,9 @@ public class Interpreter
                 var message = "";
                 foreach (var expr in print.Children)
                 {
-                    if (expr is AtomAST)
+                    message += Evaluate(((ExpressionAST)expr), variables).AsString();
+                    /*
+                    if (expr is ExpressionAST)
                     {
                         var value = ((AtomAST)expr).Value;
                         if (value.StartsWith("\""))
@@ -223,8 +262,23 @@ public class Interpreter
                     }
                     else
                         throw new Exception("Unrecognized expr: " + expr);
+                    */
                 }
                 Out.WriteLine(message);
+            }
+            else if (node is InputAST)
+            {
+                var input = (InputAST)node;
+                var label = input.Label;
+                var rawInput = In.ReadLine();
+                System.Console.WriteLine(">>> Received incoming {0}", rawInput);
+                variables[label] = new Variant(rawInput);
+            }
+            else if (node is AssignmentAST)
+            {
+                var assign = (AssignmentAST)node;
+                var label = assign.Label;
+                variables[label] = Evaluate(assign.Expr, variables);
             }
             else if (node is CodeBlockAST)
             {
