@@ -19,6 +19,16 @@ closing
    : 'KTHXBYE'
    ;
 
+/*
+type
+   : 'YARN'
+   | 'NUMBR'
+   | 'NUMBAR'
+   | 'TROOF'
+   | 'BUKKIT'
+   ;
+ */
+
 code_block: statement+;
 
 statement
@@ -26,13 +36,13 @@ statement
    | expression
    | print_block
    | input_block
-   /*
    | assignment
-   | loop
+   /*
    | comment
    | if_block
-   | func_decl
+   | loop
    | import
+   | func_decl
    */
    ;
 
@@ -49,11 +59,11 @@ input_block
    : 'GIMMEH' LABEL
    ;
 
-/*
 assignment
    : LABEL 'R' expression
    ;
 
+/*
 comment
    : 'BTW' ~ [\r\n]*
    | 'OBTW' ~ 'TLDR'
