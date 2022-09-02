@@ -26,56 +26,66 @@ class InterpreterTests {
         assertEquals(interp.program.version, "1.2")
     }
 
-    fun readExampleFile(filename : String) : String { 
-        return File("../../examples/${filename}").readText()
-    }
-
-    @Test fun hai12Example() {
-        val code = readExampleFile("hai12.lol")
-
-        val interp = Interpreter()
-        interp.execute(code)
-
-        assertEquals(interp.program.version, "1.2")
-    }
-    @Test fun haiExample() {
-        val code = readExampleFile("hai.lol")
-
-        val interp = Interpreter()
-        interp.execute(code)
-
-        assertEquals(interp.program.version, "1.2")
-    }
-    @Test fun justvarExample() {
-        val code = readExampleFile("justvar.lol")
-        System.out.println(code)
-
-        val interp = Interpreter()
-        interp.execute(code)
-
-        assertEquals(interp.program.version, "1.2")
-        assertEquals(interp.program.codeBlock.children.size, 1)
-        val decl = interp.program.codeBlock.children.get(0) as Declaration
-        assertEquals(decl.name, "var")
-        assertEquals(decl.initialValue, "0")
-    }
-    @Test fun varExample() {
-        val code = readExampleFile("var.lol")
-        System.out.println(code)
+    fun executeExampleFile(filename : String, input : String = "") : Pair<Interpreter, String> {
+        val code = File("../../examples/${filename}").readText()
 
         val interp = Interpreter()
         val outBuffer = java.io.ByteArrayOutputStream()
         interp.ioOut = java.io.PrintStream(outBuffer)
+        interp.ioIn = input.byteInputStream()
+
         interp.execute(code)
+
+        return Pair(interp, outBuffer.toString())
+    }
+
+    @Test fun haiExample() {
+        val (interp, _) = executeExampleFile("hai.lol")
+
+        assertEquals(interp.program.version, "1.2")
+    }
+    @Test fun hai12Example() {
+        val (interp, _) = executeExampleFile("hai12.lol")
+
+        assertEquals(interp.program.version, "1.2")
+    }
+    @Test fun justvarExample() {
+        val (interp, _) = executeExampleFile("justvar.lol")
+
+        assertEquals(interp.program.version, "1.2")
+        assertEquals(interp.program.codeBlock.children.size, 1)
+        val decl = interp.program.codeBlock.children.get(0) as DeclarationAST
+        assertEquals(decl.name, "var")
+        assertEquals(decl.initialValue, "0")
+    }
+    @Test fun varExample() {
+        val (interp, outBuffer) = executeExampleFile("var.lol")
 
         assertEquals(interp.program.codeBlock.children.size, 2)
 
-        val decl = interp.program.codeBlock.children.get(0) as Declaration
+        val decl = interp.program.codeBlock.children.get(0) as DeclarationAST
         assertEquals(decl.name, "var")
         assertEquals(decl.initialValue, "0")
 
-        assertTrue(interp.program.codeBlock.children.get(1) is Print)
+        assertTrue(interp.program.codeBlock.children.get(1) is PrintAST)
 
         assertEquals("The var is 0\n", outBuffer.toString())
+    }
+    @Test fun helloExample() {
+        val (_, outBuffer) = executeExampleFile("hello.lol")
+        assertEquals("Hello world\n", outBuffer.toString())
+    }
+    @Test fun inputageExample() {
+        val (_, outBuffer) = executeExampleFile("inputage.lol", "27\n")
+        assertEquals("What is your age?\nYour age is 27\n", outBuffer.toString())
+    }
+    @Test fun assignExample() {
+        val (_, outBuffer) = executeExampleFile("assign.lol", "27\n")
+        assertEquals(
+            "What is your age?\n" + 
+            "Your age is 27\n" +
+            "Your age is now 50\n" +
+            "UR OLD!\n",
+            outBuffer.toString())
     }
 }

@@ -4,6 +4,7 @@
 package com.tedneward.lolcode
 
 import java.util.Stack
+import java.io.BufferedInputStream
 import org.antlr.v4.runtime.*
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.ParseTreeWalker
@@ -16,51 +17,61 @@ open class ASTNode(val children: MutableList<ASTNode> = mutableListOf()) {
         return "${mappedChildren}"
     }
 }
-class CodeBlock() : ASTNode() {
-
-}
-class Program(var version: String = "", var codeBlock: CodeBlock = CodeBlock()) : ASTNode() { 
+class CodeBlockAST() : ASTNode() { }
+class Program(var version: String = "", var codeBlock: CodeBlockAST = CodeBlockAST()) : ASTNode() { 
     override fun toString() : String {
         return "(program version:${version} codeBlock:${codeBlock})"
     }
 }
-class Declaration(var name : String, var initialValue : String) : ASTNode() { 
-    override fun toString() : String {
-        return "(decl ${name} ${initialValue})"
-    }
-}
-class Atom(val value : String) : ASTNode() { 
+open class StatementAST : ASTNode() { }
+open class ExpressionAST : StatementAST() { }
+class AtomAST(val value : String) : ExpressionAST() { 
     override fun toString() : String {
         return "(ATOM ${value})"
     }
 }
-class Label(val name : String) : ASTNode() { 
+class LabelAST(val name : String) : ExpressionAST() { 
     override fun toString() : String {
         return "(LABEL ${name})"
     }
 }
-class Print() : ASTNode() {
+class DeclarationAST(var name : String, var initialValue : String) : StatementAST() { 
+    override fun toString() : String {
+        return "(decl ${name} ${initialValue})"
+    }
+}
+class PrintAST() : StatementAST() {
     override fun toString() : String {
         return "(print ${super.toString()})"
+    }
+}
+class InputAST(val label : String) : StatementAST() {
+    override fun toString() : String {
+        return "(input ${label})"
+    }
+}
+class AssignmentAST(val label : String, val expression : ExpressionAST) : ASTNode() {
+    override fun toString() : String {
+        return "(assign ${label} ${expression})"
     }
 }
 
 class ASTBuilder() : lolcodeBaseListener() {
     val program = Program()
-    var blockStack = Stack<CodeBlock>()
+    var blockStack = Stack<CodeBlockAST>()
 
     override fun enterProgram(ctx : lolcodeParser.ProgramContext) { 
         program.version = if (ctx.opening().version() != null) ctx.opening().version().getText() else "1.2";
     }
     override fun enterCode_block(ctx : lolcodeParser.Code_blockContext) {
-        val codeBlock = if (blockStack.isEmpty()) program.codeBlock else CodeBlock()
-        blockStack.push(codeBlock)
+        val codeBlockAST = if (blockStack.isEmpty()) program.codeBlock else CodeBlockAST()
+        blockStack.push(codeBlockAST)
     }
     override fun exitCode_block(ctx : lolcodeParser.Code_blockContext) {
         blockStack.pop()
     }
     override fun enterDeclaration(ctx : lolcodeParser.DeclarationContext) {
-        val decl = Declaration(
+        val decl = DeclarationAST(
             ctx.LABEL().text, 
             if (ctx.expression() != null) 
                 ctx.expression().text
@@ -69,20 +80,41 @@ class ASTBuilder() : lolcodeBaseListener() {
         )
         blockStack.peek().children.add(decl);
     }
+    override fun enterInput_block(ctx : lolcodeParser.Input_blockContext) {
+        val inputAST = InputAST(ctx.LABEL().text)
+        blockStack.peek().children.add(inputAST)
+    }
     override fun enterPrint_block(ctx : lolcodeParser.Print_blockContext) {
-        val print = Print()
+        val printAST = PrintAST()
         ctx.expression().forEach { it ->
             if (it.ATOM() != null) {
-                print.children.add(Atom(it.ATOM().text))
+                printAST.children.add(AtomAST(it.ATOM().text))
             }
             else if (it.LABEL() != null) {
-                print.children.add(Label(it.LABEL().text))
+                printAST.children.add(LabelAST(it.LABEL().text))
             }
             else {
-                throw Exception("Unrecognized node in print_block: " + it)
+                throw Exception("Unrecognized node in printAST_block: " + it)
             }
         }
-        blockStack.peek().children.add(print)
+        blockStack.peek().children.add(printAST)
+    }
+    override fun enterAssignment(ctx: lolcodeParser.AssignmentContext) {
+        // This is wildly inefficient, and I probably need to move to Visitors
+        // here before this gets out of hand.
+        val label = ctx.LABEL().text
+        val expr : ExpressionAST = 
+            if (ctx.expression().LABEL() != null) {
+                LabelAST(ctx.expression().LABEL().text)
+            }
+            else if (ctx.expression().ATOM() != null) {
+                AtomAST(ctx.expression().ATOM().text)
+            }
+            else {
+                throw Exception("Unrecognized expression")
+            }
+        val assignmentAST = AssignmentAST(label, expr)
+        blockStack.peek().children.add(assignmentAST)
     }
 }
 
@@ -122,22 +154,31 @@ class Interpreter {
         this.program = program
         run(this.program.codeBlock)
     }
-    fun run(codeBlock : CodeBlock) {
+    fun run(codeBlockAST : CodeBlockAST) {
         val variables : MutableMap<String, Variant> = mutableMapOf()
-        for (node in codeBlock.children) {
+
+        fun evaluate(expr : ExpressionAST) : Variant {
+            return when (expr) {
+                is AtomAST -> Variant(expr.value)
+                is LabelAST -> variables[expr.name]!!
+                else -> throw Exception("Unrecognized expression: ${expr}")
+            }
+        }
+
+        for (node in codeBlockAST.children) {
             when (node) {
-                is Declaration -> {
+                is DeclarationAST -> {
                     variables.put(node.name, Variant(node.initialValue))
                 }
-                is Print -> {
+                is PrintAST -> {
                     var message = ""
                     node.children.forEach { it ->
                         when (it) {
-                            is Atom -> {
+                            is AtomAST -> {
                                 var value = it.value.replace("\"", "")
                                 message += value
                             }
-                            is Label -> {
+                            is LabelAST -> {
                                 if (variables[it.name] == null)
                                     throw Exception("${it.name} not found")
                                 message += variables[it.name]!!.asString()
@@ -148,6 +189,13 @@ class Interpreter {
                         }
                     }
                     ioOut.println(message)
+                }
+                is InputAST -> {
+                    var input = ioIn.bufferedReader().readLine()
+                    variables[node.label] = Variant(input)
+                }
+                is AssignmentAST -> {
+                    variables[node.label] = evaluate(node.expression)
                 }
                 else -> {
                     System.out.println("Unrecognized node: ${node}")
@@ -161,7 +209,6 @@ class Interpreter {
         val parser = lolcodeParser(tokens)
         val builder = ASTBuilder()
         ParseTreeWalker.DEFAULT.walk(builder, parser.program())
-        System.out.println("AST: ${builder.program}")
         run(builder.program)
     }
 }
