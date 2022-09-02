@@ -6,4 +6,4 @@ build
 
 # Ignore local-JAR directory (which is where we put
 # ANTLR-generated JAR file)
-libs/*.jar
+engine/libs/lolcodeparser.jar
