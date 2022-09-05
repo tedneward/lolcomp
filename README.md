@@ -21,7 +21,7 @@ When that seems correct, generate the sources from the ANTLR grammer with `gener
 # LOLCODE implementations
 
 ## C# (csharp) -- CLR
-Test with `dotnet test "console;...`.
+Test with `dotnet test -l "console;verbosity=detailed"`.
 
 ## Kotlin -- JVM
 Test with `gradle test`.
@@ -59,6 +59,12 @@ Generate grammar sufficient to parse/run "HAI 1.2/KTHXBYE":
 * Parser/g4: input_block
 * AST: Input
 * Interpreter: Input branch (reading from ioIn and storing to Variant-referenced-by-Label)
+
+## Step 4: Assignment
+
+* Parser/g4: assignment
+* AST: Assignment
+* Interpreter: Assignment
 
 # TODOs
 
