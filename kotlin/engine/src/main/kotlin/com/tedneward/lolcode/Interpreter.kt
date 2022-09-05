@@ -9,140 +9,72 @@ import org.antlr.v4.runtime.*
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 
-// ====================================
-// Abstract Syntax Tree
-open class ASTNode(val children: MutableList<ASTNode> = mutableListOf()) { 
-    override fun toString() : String {
-        val mappedChildren = children.map { it.toString() }
-        return "${mappedChildren}"
-    }
-}
-class CodeBlockAST() : ASTNode() { }
-class Program(var version: String = "", var codeBlock: CodeBlockAST = CodeBlockAST()) : ASTNode() { 
-    override fun toString() : String {
-        return "(program version:${version} codeBlock:${codeBlock})"
-    }
-}
-open class StatementAST : ASTNode() { }
-open class ExpressionAST : StatementAST() { }
-class AtomAST(val value : String) : ExpressionAST() { 
-    override fun toString() : String {
-        return "(ATOM ${value})"
-    }
-}
-class LabelAST(val name : String) : ExpressionAST() { 
-    override fun toString() : String {
-        return "(LABEL ${name})"
-    }
-}
-class DeclarationAST(var name : String, var initialValue : String) : StatementAST() { 
-    override fun toString() : String {
-        return "(decl ${name} ${initialValue})"
-    }
-}
-class PrintAST() : StatementAST() {
-    override fun toString() : String {
-        return "(print ${super.toString()})"
-    }
-}
-class InputAST(val label : String) : StatementAST() {
-    override fun toString() : String {
-        return "(input ${label})"
-    }
-}
-class AssignmentAST(val label : String, val expression : ExpressionAST) : ASTNode() {
-    override fun toString() : String {
-        return "(assign ${label} ${expression})"
-    }
-}
+import com.tedneward.lolcode.ast.*
 
 class ASTBuilder() : lolcodeBaseListener() {
     val program = Program()
-    var blockStack = Stack<CodeBlockAST>()
+    var blockStack = Stack<CodeBlock>()
 
     override fun enterProgram(ctx : lolcodeParser.ProgramContext) { 
         program.version = if (ctx.opening().version() != null) ctx.opening().version().getText() else "1.2";
     }
     override fun enterCode_block(ctx : lolcodeParser.Code_blockContext) {
-        val codeBlockAST = if (blockStack.isEmpty()) program.codeBlock else CodeBlockAST()
-        blockStack.push(codeBlockAST)
+        val codeBlock = if (blockStack.isEmpty()) program.codeBlock else CodeBlock()
+        blockStack.push(codeBlock)
     }
     override fun exitCode_block(ctx : lolcodeParser.Code_blockContext) {
         blockStack.pop()
     }
     override fun enterDeclaration(ctx : lolcodeParser.DeclarationContext) {
-        val decl = DeclarationAST(
+        val decl = Declaration(
             ctx.LABEL().text, 
             if (ctx.expression() != null) 
                 ctx.expression().text
             else
                 ""
         )
-        blockStack.peek().children.add(decl);
+        blockStack.peek().add(decl);
     }
     override fun enterInput_block(ctx : lolcodeParser.Input_blockContext) {
-        val inputAST = InputAST(ctx.LABEL().text)
-        blockStack.peek().children.add(inputAST)
+        val input = Input(ctx.LABEL().text)
+        blockStack.peek().add(input)
     }
     override fun enterPrint_block(ctx : lolcodeParser.Print_blockContext) {
-        val printAST = PrintAST()
+        val printAST = Print()
         ctx.expression().forEach { it ->
             if (it.ATOM() != null) {
-                printAST.children.add(AtomAST(it.ATOM().text))
+                printAST.add(Atom(it.ATOM().text))
             }
             else if (it.LABEL() != null) {
-                printAST.children.add(LabelAST(it.LABEL().text))
+                printAST.add(Label(it.LABEL().text))
             }
             else {
                 throw Exception("Unrecognized node in printAST_block: " + it)
             }
         }
-        blockStack.peek().children.add(printAST)
+        blockStack.peek().add(printAST)
     }
     override fun enterAssignment(ctx: lolcodeParser.AssignmentContext) {
         // This is wildly inefficient, and I probably need to move to Visitors
         // here before this gets out of hand.
         val label = ctx.LABEL().text
-        val expr : ExpressionAST = 
+        val expr : Expression = 
             if (ctx.expression().LABEL() != null) {
-                LabelAST(ctx.expression().LABEL().text)
+                Label(ctx.expression().LABEL().text)
             }
             else if (ctx.expression().ATOM() != null) {
-                AtomAST(ctx.expression().ATOM().text)
+                Atom(ctx.expression().ATOM().text)
             }
             else {
                 throw Exception("Unrecognized expression")
             }
-        val assignmentAST = AssignmentAST(label, expr)
-        blockStack.peek().children.add(assignmentAST)
+        val assignment = Assignment(label, expr)
+        blockStack.peek().add(assignment)
     }
 }
 
 // ====================================
 // Interpreter
-class Variant(public val value : Any? = null) {
-    public val type = if (value != null) value::class else Void::class
-
-    fun verifyUntyped() { if (type == Void::class) { throw Exception("CANT CONVER NOOB") } }
-
-    fun asBoolean() : Boolean { 
-        verifyUntyped()
-        return when {
-            value is String && value.uppercase() == "TRUE" -> true
-            value is String && value.uppercase() == "FALSE" -> false
-            value is Number && value.toLong() == 0L -> false
-            value is Number && value.toLong() != 0L -> true
-            else -> false
-        }
-    }
-    fun asInt64() : Long { verifyUntyped(); return java.lang.Long.parseLong(value.toString()) }
-    fun asDouble() : Double { verifyUntyped(); return java.lang.Double.parseDouble(value.toString()) }
-    fun asString() : String { verifyUntyped(); return value.toString() }
-
-    override fun toString() : String {
-        return if (value == null) "[NOOB]" else "[${value} (${value::class.qualifiedName})]"
-    }
-}
 class Interpreter {
     var program : Program = Program()
     var ioOut : java.io.PrintStream = System.out
@@ -154,31 +86,63 @@ class Interpreter {
         this.program = program
         run(this.program.codeBlock)
     }
-    fun run(codeBlockAST : CodeBlockAST) {
+    fun run(codeBlock : CodeBlock) {
         val variables : MutableMap<String, Variant> = mutableMapOf()
 
-        fun evaluate(expr : ExpressionAST) : Variant {
+        fun evaluate(expr : Expression) : Variant {
             return when (expr) {
-                is AtomAST -> Variant(expr.value)
-                is LabelAST -> variables[expr.name]!!
+                is Atom -> Variant(expr.value)
+                is Label -> variables[expr.name]!!
+                is BinaryOp -> {
+                    val left = evaluate(expr.left)
+                    val right = evaluate(expr.right)
+
+                    // Type conversions
+                    if (left.type == Variant.TYPE.NUMBR && right.type == Variant.TYPE.NUMBR) {
+                        // Cool, we have two ints
+                        return when (expr.op) {
+                            "+" -> Variant(left.asInt64() + right.asInt64())
+                            "-" -> Variant(left.asInt64() - right.asInt64())
+                            "*" -> Variant(left.asInt64() * right.asInt64())
+                            "/" -> Variant(left.asInt64() / right.asInt64())
+                            "%" -> Variant(left.asInt64() % right.asInt64())
+                            else -> throw Exception("Unrecognized operator: ${expr.op}")
+                        }
+                    }
+                    else if (left.type == Variant.TYPE.NUMBAR && right.type == Variant.TYPE.NUMBAR) {
+                        // Cool, we have two doubles
+                        return when (expr.op) {
+                            "+" -> Variant(left.asDouble() + right.asDouble())
+                            "-" -> Variant(left.asDouble() - right.asDouble())
+                            "*" -> Variant(left.asDouble() * right.asDouble())
+                            "/" -> Variant(left.asDouble() / right.asDouble())
+                            "%" -> Variant(left.asDouble() % right.asDouble())
+                            else -> throw Exception("Unrecognized operator: ${expr.op}")
+                        }
+                    }
+                    else {
+                        // Bleargh
+                        throw Exception("Variant type conversions required--bleargh")
+                    }
+                }
                 else -> throw Exception("Unrecognized expression: ${expr}")
             }
         }
 
-        for (node in codeBlockAST.children) {
+        for (node in codeBlock.children) {
             when (node) {
-                is DeclarationAST -> {
+                is Declaration -> {
                     variables.put(node.name, Variant(node.initialValue))
                 }
-                is PrintAST -> {
+                is Print -> {
                     var message = ""
                     node.children.forEach { it ->
                         when (it) {
-                            is AtomAST -> {
+                            is Atom -> {
                                 var value = it.value.replace("\"", "")
                                 message += value
                             }
-                            is LabelAST -> {
+                            is Label -> {
                                 if (variables[it.name] == null)
                                     throw Exception("${it.name} not found")
                                 message += variables[it.name]!!.asString()
@@ -190,11 +154,11 @@ class Interpreter {
                     }
                     ioOut.println(message)
                 }
-                is InputAST -> {
+                is Input -> {
                     var input = ioIn.bufferedReader().readLine()
                     variables[node.label] = Variant(input)
                 }
-                is AssignmentAST -> {
+                is Assignment -> {
                     variables[node.label] = evaluate(node.expression)
                 }
                 else -> {

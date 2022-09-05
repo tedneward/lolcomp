@@ -3,6 +3,8 @@
  */
 package com.tedneward.lolcode
 
+import com.tedneward.lolcode.ast.*
+
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -54,7 +56,7 @@ class InterpreterTests {
 
         assertEquals(interp.program.version, "1.2")
         assertEquals(interp.program.codeBlock.children.size, 1)
-        val decl = interp.program.codeBlock.children.get(0) as DeclarationAST
+        val decl = interp.program.codeBlock.children.get(0) as Declaration
         assertEquals(decl.name, "var")
         assertEquals(decl.initialValue, "0")
     }
@@ -63,11 +65,11 @@ class InterpreterTests {
 
         assertEquals(interp.program.codeBlock.children.size, 2)
 
-        val decl = interp.program.codeBlock.children.get(0) as DeclarationAST
+        val decl = interp.program.codeBlock.children.get(0) as Declaration
         assertEquals(decl.name, "var")
         assertEquals(decl.initialValue, "0")
 
-        assertTrue(interp.program.codeBlock.children.get(1) is PrintAST)
+        assertTrue(interp.program.codeBlock.children.get(1) is Print)
 
         assertEquals("The var is 0\n", outBuffer.toString())
     }
