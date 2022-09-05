@@ -1,7 +1,15 @@
 # lolcomp
 A practice harness for building a language (LOLCODE, in this case)
 
-Requires `antlr` tool to be installed and on the PATH someplace. Easiest way to do this: `brew install antlr`.
+Requires:
+
+* `antlr` tool to be installed and on the PATH someplace. Easiest way to do this: `brew install antlr`. Note that I've included the (as-of-this-writing) latest ANTLR JAR file in the repository, mostly for easier reference when running the `grun` tool, but it will be helpful to have ANTLR installed globally when working with some of the grammars. Used ANTLR 4.10.
+* `gradle` and some flavor of build JDK (a la OpenJDK or whatever the JDK-*du-jour* is). Used Gradle 7 and OpenJDK 17.
+* `dotnet`. Used .NET 6.0.
+* `make`. Most flavors of make would work. Used GNU make 3.81 (apple-darwin).
+
+# Quick-and-dirty Build
+`make all` from top-level directory.
 
 # Generate LOLCode grammars
 Since I don't anticipate adding anything to the existing LOLCode language (he said, knowing he probably would given half a chance and any reasonable chance of success), I'm not hooking the grammar-generation into the various build steps (yet).
@@ -12,11 +20,11 @@ When that seems correct, generate the sources from the ANTLR grammer with `gener
 
 ## CLR
 
-`dotnet build` should be sufficient to generate the ANTLR sources and compile them into an assembly (lolcodeparser.dll).
+`dotnet build` should be sufficient to generate the ANTLR sources and compile them into an assembly (`LOLCODEParser.dll`).
 
 ## JVM
 
-`gradle jar` should be sufficient to generate the ANTLR sources and compile them into a jar file (lolcodeparser.jar).
+`gradle jar` should be sufficient to generate the ANTLR sources and compile them into a jar file (`lolcodeparser.jar`).
 
 # LOLCODE implementations
 
