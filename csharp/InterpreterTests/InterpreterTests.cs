@@ -44,8 +44,8 @@ public class InterpreterTests
          */
         var program = new Program();
         program.Version = "1.2";
-        program.Children.Add(new CodeBlock());
-        program.CodeBlock.Children.Add(new Declaration() { Name = "var", InitialValue = "0"});
+        program.Children.Add(new CodeBlockAST());
+        program.CodeBlock.Children.Add(new DeclarationAST() { Name = "var", InitialValue = "0"});
 
         interp.Run(program);
         Assert.AreEqual("", interp.Out.ToString());
@@ -67,11 +67,11 @@ public class InterpreterTests
          */
         var program = new Program();
         program.Version = "1.2";
-        program.Children.Add(new CodeBlock());
-        program.CodeBlock.Children.Add(new Declaration() { Name = "var", InitialValue = "0"});
-        var print = new PrintExpr();
-        print.Children.Add(new Atom() { Value = "The var is "});
-        print.Children.Add(new Label() { Name = "var"});
+        program.Children.Add(new CodeBlockAST());
+        program.CodeBlock.Children.Add(new DeclarationAST() { Name = "var", InitialValue = "0"});
+        var print = new PrintExprAST();
+        print.Children.Add(new AtomAST() { Value = "The var is "});
+        print.Children.Add(new LabelAST() { Name = "var"});
         program.CodeBlock.Children.Add(print);
 
         interp.Run(program);

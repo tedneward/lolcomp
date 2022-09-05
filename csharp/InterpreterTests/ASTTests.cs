@@ -2,9 +2,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace InterpreterTests;
 
-using System;
-using System.Collections.Generic;
-using LOLCODEParser;
 using Interpreter;
 
 [TestClass]
@@ -31,13 +28,13 @@ public class ASTTests
          */
         var program = new Program();
         program.Version = "1.2";
-        program.Children.Add(new CodeBlock());
-        program.CodeBlock.Children.Add(new Declaration() { Name = "var", InitialValue = "0"});
+        program.Children.Add(new CodeBlockAST());
+        program.CodeBlock.Children.Add(new DeclarationAST() { Name = "var", InitialValue = "0"});
 
         Assert.AreEqual(1, program.CodeBlock.Children.Count);
-        Assert.AreEqual(typeof(Declaration), program.CodeBlock.Children[0].GetType());
-        Assert.AreEqual("var", ((Declaration)program.CodeBlock.Children[0]).Name);
-        Assert.AreEqual("0", ((Declaration)program.CodeBlock.Children[0]).InitialValue);
+        Assert.AreEqual(typeof(DeclarationAST), program.CodeBlock.Children[0].GetType());
+        Assert.AreEqual("var", ((DeclarationAST)program.CodeBlock.Children[0]).Name);
+        Assert.AreEqual("0", ((DeclarationAST)program.CodeBlock.Children[0]).InitialValue);
     }
 
     [TestMethod]
@@ -51,17 +48,17 @@ public class ASTTests
          */
         var program = new Program();
         program.Version = "1.2";
-        program.Children.Add(new CodeBlock());
-        program.CodeBlock.Children.Add(new Declaration() { Name = "var", InitialValue = "0"});
-        var print = new PrintExpr();
-        print.Children.Add(new Atom() { Value = "The var is"});
-        print.Children.Add(new Label() { Name = "var"});
+        program.Children.Add(new CodeBlockAST());
+        program.CodeBlock.Children.Add(new DeclarationAST() { Name = "var", InitialValue = "0"});
+        var print = new PrintExprAST();
+        print.Children.Add(new AtomAST() { Value = "The var is"});
+        print.Children.Add(new LabelAST() { Name = "var"});
         program.CodeBlock.Children.Add(print);
 
         Assert.AreEqual(2, program.CodeBlock.Children.Count);
 
-        Assert.AreEqual(typeof(Declaration), program.CodeBlock.Children[0].GetType());
-        Assert.AreEqual("var", ((Declaration)program.CodeBlock.Children[0]).Name);
-        Assert.AreEqual("0", ((Declaration)program.CodeBlock.Children[0]).InitialValue);
+        Assert.AreEqual(typeof(DeclarationAST), program.CodeBlock.Children[0].GetType());
+        Assert.AreEqual("var", ((DeclarationAST)program.CodeBlock.Children[0]).Name);
+        Assert.AreEqual("0", ((DeclarationAST)program.CodeBlock.Children[0]).InitialValue);
     }
 }

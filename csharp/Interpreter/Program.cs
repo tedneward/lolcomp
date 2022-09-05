@@ -1,9 +1,7 @@
 ﻿namespace Interpreter;
 
 using System.Collections.Generic;
-using System.IO;
 using Antlr4.Runtime;
-using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 using LOLCODEParser;
 
@@ -20,10 +18,10 @@ public class ASTNode
 public class Program : ASTNode
 {
     public string Version { get; set; } = "";
-    public CodeBlock CodeBlock 
+    public CodeBlockAST CodeBlock 
     { 
         // By definition the code_block is the first child of program (if present)
-        get { return Children.Count > 0 ? (CodeBlock)Children[0] : null; }
+        get { return Children.Count > 0 ? (CodeBlockAST)Children[0] : null; }
     }
 
     public override string ToString()
@@ -32,28 +30,40 @@ public class Program : ASTNode
             Version, CodeBlock != null ? CodeBlock.ToString() : "()");
     }
 }
-public class CodeBlock : ASTNode
+public class CodeBlockAST : ASTNode
 { }
-public class Declaration : ASTNode
+public class StatementAST : ASTNode { }
+public class ExpressionAST : StatementAST { }
+public class DeclarationAST : StatementAST
 {
     public string Name { get; set; } = "";
     public string InitialValue { get; set; } = "";
     public override string ToString() { return String.Format("(decl {0} {1})", Name, InitialValue); }
 }
-public class Label : ASTNode
+public class LabelAST : ExpressionAST
 {
-    public string Name { get; set; }
-    public Label() { Name = ""; }
+    public string Name { get; set; } = "";
     public override string ToString() { return String.Format("(LABEL {0})", Name); }
 }
-public class Atom : ASTNode
+public class AtomAST : ExpressionAST
 {
     public string Value { get; set; } = "";
     public override string ToString() { return String.Format("(ATOM {0})", Value); }
 }
-public class PrintExpr : ASTNode
+public class PrintExprAST : StatementAST
 { 
     public override string ToString() { return String.Format("(print {0})", base.ToString()); }
+}
+public class InputAST : StatementAST
+{
+    public string Label { get; set; } = "";
+    public override string ToString() { return String.Format("(input {0})", Label); }
+}
+public class AssignmentAST : ExpressionAST
+{
+    public string Label { get; set; } = "";
+    public ExpressionAST Expr { get; set; } = new ExpressionAST();
+    public override string ToString() { return String.Format("(assign {0} = {1})", Label, Expr); }
 }
 
 
@@ -62,7 +72,7 @@ public class ASTBuilder : lolcodeBaseListener
     public ASTBuilder() { }
 
     public Program program = new Program();
-    public Stack<CodeBlock> currentBlock = new Stack<CodeBlock>();
+    public Stack<CodeBlockAST> currentBlock = new Stack<CodeBlockAST>();
 
     override public void EnterProgram(lolcodeParser.ProgramContext ctx) 
     {
@@ -74,7 +84,7 @@ public class ASTBuilder : lolcodeBaseListener
 
     override public void EnterCode_block(lolcodeParser.Code_blockContext ctx)
     {
-        CodeBlock cb = new CodeBlock();
+        CodeBlockAST cb = new CodeBlockAST();
 
         // Are we at the very first code block?
         if (currentBlock.Count == 0)
@@ -96,7 +106,7 @@ public class ASTBuilder : lolcodeBaseListener
 
     override public void EnterDeclaration(lolcodeParser.DeclarationContext ctx)
     {
-        Declaration decl = new Declaration();
+        var decl = new DeclarationAST();
 
         decl.Name = ctx.LABEL().GetText();
         if (ctx.expression() != null)
@@ -107,17 +117,17 @@ public class ASTBuilder : lolcodeBaseListener
 
     override public void EnterPrint_block(lolcodeParser.Print_blockContext ctx)
     {
-        PrintExpr print = new PrintExpr();
+        var print = new PrintExprAST();
 
         foreach (var expr in ctx.expression())
         {
             if (expr.ATOM() != null)
             {
-                print.Children.Add(new Atom() { Value = expr.ATOM().GetText() });
+                print.Children.Add(new AtomAST() { Value = expr.ATOM().GetText() });
             }
             else if (expr.LABEL() != null)
             {
-                print.Children.Add(new Label() { Name = expr.LABEL().GetText() });
+                print.Children.Add(new LabelAST() { Name = expr.LABEL().GetText() });
             }
             else
             {
@@ -127,6 +137,50 @@ public class ASTBuilder : lolcodeBaseListener
 
         currentBlock.Peek().Children.Add(print);
     }
+    public override void EnterInput_block([Antlr4.Runtime.Misc.NotNull] lolcodeParser.Input_blockContext context)
+    {
+        var input = new InputAST();
+
+        input.Label = context.LABEL().GetText();
+
+        currentBlock.Peek().Children.Add(input);
+    }
+    public override void EnterAssignment([Antlr4.Runtime.Misc.NotNull] lolcodeParser.AssignmentContext context)
+    {
+        var assign = new AssignmentAST();
+
+        assign.Label = context.LABEL().GetText();
+        assign.Expr = 
+            context.expression().ATOM() != null ? new AtomAST() { Value = context.expression().ATOM().GetText() } :
+            context.expression().LABEL() != null ? new LabelAST() { Name = context.expression().LABEL().GetText() } :
+            throw new Exception(String.Format("Unrecognized expression: {0}", context.expression())); 
+
+        currentBlock.Peek().Children.Add(assign);
+    }
+}
+
+// LOLCODE types can be strings, int64s, float64s, bools, or "untyped"
+public class Variant
+{
+    private object? value;
+    private Type type;
+
+    public Variant() { value = null; type = typeof(void); }
+    public Variant(bool bVal) { value = bVal; type = typeof(bool); }
+    public Variant(Int64 lVal) { value = lVal; type = typeof(long); }
+    public Variant(Double dVal) { value = dVal; type = typeof(double); }
+    public Variant(String sVal) { 
+        // Normalize the string--remove any leading/trailing quotes
+        value = sVal.StartsWith("\"") ? sVal.Trim('"') : sVal;
+        type = typeof(string); 
+
+    }
+
+    private void UntypedCheck() { if (type == typeof(void)) throw new Exception("Cannot cast from an Untyped value"); }
+    public bool AsBool() { UntypedCheck(); return Boolean.Parse(value.ToString()); }
+    public Int64 AsInt() { UntypedCheck(); return Int64.Parse(value.ToString()); }
+    public Double AsDouble() { UntypedCheck(); return Double.Parse(value.ToString()); }
+    public String AsString() { UntypedCheck(); return value.ToString(); }
 }
 
 public class Interpreter
@@ -158,29 +212,43 @@ public class Interpreter
     {
         RunCodeBlock(program.CodeBlock);
     }
-    public void RunCodeBlock(CodeBlock block)
+    public void RunCodeBlock(CodeBlockAST block)
     {
         // Nothing to do for empty code blocks
         if (block == null || block.Children.Count == 0)
             return;
 
-        var variables = new Dictionary<string, object>();
+        var Evaluate = new Func<ExpressionAST, Dictionary<string,Variant>, Variant>(
+            (ExpressionAST expr, Dictionary<string, Variant> scope) => {
+            if (expr is LabelAST) {
+                return scope[((LabelAST)expr).Name];
+            }
+            if (expr is AtomAST) {
+                return new Variant(((AtomAST)expr).Value);
+            }
+
+            throw new Exception(String.Format("Unrecognized expression: {0}", expr));
+        });
+
+        var variables = new Dictionary<string, Variant>();
         foreach (var node in block.Children)
         {
-            if (node is Declaration) 
+            if (node is DeclarationAST) 
             {
-                var decl = (Declaration)node;
-                variables[decl.Name] = decl.InitialValue;
+                var decl = (DeclarationAST)node;
+                variables[decl.Name] = new Variant(decl.InitialValue);
             }
-            else if (node is PrintExpr)
+            else if (node is PrintExprAST)
             {
-                var print = (PrintExpr)node;
+                var print = (PrintExprAST)node;
                 var message = "";
                 foreach (var expr in print.Children)
                 {
-                    if (expr is Atom)
+                    message += Evaluate(((ExpressionAST)expr), variables).AsString();
+                    /*
+                    if (expr is ExpressionAST)
                     {
-                        var value = ((Atom)expr).Value;
+                        var value = ((AtomAST)expr).Value;
                         if (value.StartsWith("\""))
                         {
                             // It's a literal string, with quotes, which we must strip off
@@ -188,18 +256,33 @@ public class Interpreter
                         }
                         message += value;
                     }
-                    else if (expr is Label)
+                    else if (expr is LabelAST)
                     {
-                        message += variables[((Label)expr).Name].ToString();
+                        message += variables[((LabelAST)expr).Name].ToString();
                     }
                     else
                         throw new Exception("Unrecognized expr: " + expr);
+                    */
                 }
                 Out.WriteLine(message);
             }
-            else if (node is CodeBlock)
+            else if (node is InputAST)
             {
-                RunCodeBlock((CodeBlock)node);
+                var input = (InputAST)node;
+                var label = input.Label;
+                var rawInput = In.ReadLine();
+                System.Console.WriteLine(">>> Received incoming {0}", rawInput);
+                variables[label] = new Variant(rawInput);
+            }
+            else if (node is AssignmentAST)
+            {
+                var assign = (AssignmentAST)node;
+                var label = assign.Label;
+                variables[label] = Evaluate(assign.Expr, variables);
+            }
+            else if (node is CodeBlockAST)
+            {
+                RunCodeBlock((CodeBlockAST)node);
             }
             else
             {

@@ -3,7 +3,7 @@ Reference: https://github.com/jynnantonix/lolcode/blob/master/BNFGrammar.txt
 */
 grammar lolcode;
 
-program: opening code_block? 'KTHXBYE'? EOF;
+program: opening code_block? closing? EOF;
    
 opening
    : 'HAI' version?
@@ -15,6 +15,20 @@ version
    | '1.2'
    ;
 
+closing
+   : 'KTHXBYE'
+   ;
+
+/*
+type
+   : 'YARN'
+   | 'NUMBR'
+   | 'NUMBAR'
+   | 'TROOF'
+   | 'BUKKIT'
+   ;
+ */
+
 code_block: statement+;
 
 statement
@@ -22,11 +36,12 @@ statement
    | expression
    | print_block
    | input_block
-   /*
    | assignment
-   | loop
+   /*
    | comment
    | if_block
+   | loop
+   | import
    | func_decl
    */
    ;
@@ -44,19 +59,27 @@ input_block
    : 'GIMMEH' LABEL
    ;
 
+assignment
+   : LABEL 'R' expression
+   ;
+
 /*
+comment
+   : 'BTW' ~ [\r\n]*
+   | 'OBTW' ~ 'TLDR'
+   ;
+
+import
+   : 'CAN HAS' LABEL '?'
+   ;
+
 loop
    : 'IM IN YR' LABEL 'WILE' expression code_block 'IM OUTTA YR' LABEL
    ;
 
-comment
-   : 'BTW' LABEL* NEWLINE
-   | 'OBTW' LABEL* 'TLDR'
-   ;
-
 if_block
-   : 'O RLY?' 'YA RLY' code_block 'OIC'
-   | 'O RLY?' 'YA RLY' code_block else_if_block 'OIC'
+   : expression ', O RLY?' 'YA RLY' code_block 'OIC'
+   | expression ', O RLY?' 'YA RLY' code_block else_if_block 'OIC'
    ;
 
 else_if_block
@@ -68,30 +91,13 @@ else_if_block
 func_decl
    : 'HOW DUZ I' LABEL (('YR' LABEL) ('AN YR' LABEL)*)? code_block 'IF U SAY SO'
    ;
-
-assignment
-   : LABEL 'R' expression
-   ;
 */
 
 expression
-   : 
-   /*
-   equals
-   | both
-   | not_equals
-   | greater
-   | less
-   | add
-   | sub
-   | mul
-   | div
-   | mod
+   : /*comparison
+   | maths
+   | logicals
    | cast
-   | either
-   | all
-   | any
-   | not
    | func
    | 
    */ATOM
@@ -99,12 +105,49 @@ expression
    ;
 
 /*
+comparison
+   : equals
+   | not_equals
+   | greater
+   | less
+   ;
+
 equals
    : 'BOTH SAEM' expression 'AN' expression
    ;
 
 not_equals
    : 'DIFFRINT' expression 'AN' expression
+   ;
+
+greater
+   : 'BIGGR OF' expression 'AN' expression
+   ;
+
+less
+   : 'SMALLR OF' expression 'AN' expression
+   ;
+ */
+
+/*
+logicals
+   : both
+   | either
+   | all
+   | any
+   | not
+   ;
+
+all
+   : 'ALL OF' expression ('AN' expression)* 'MKAY?'
+   ;
+
+any
+   : 'ANY OF' expression ('AN' expression)* 'MKAY?'
+   ;
+
+not
+   : 'NOT' expression
    ;
 
 both
@@ -114,13 +157,15 @@ both
 either
    : 'EITHER OF' expression 'AN' expression
    ;
+ */
 
-greater
-   : 'BIGGR OF' expression 'AN' expression
-   ;
-
-less
-   : 'SMALLR OF' expression 'AN' expression
+/*
+maths
+   : add
+   | sub
+   | mul
+   | div
+   | mod
    ;
 
 add
@@ -142,27 +187,20 @@ div
 mod
    : 'MOD OF' expression 'AN' expression
    ;
+*/
 
+
+/*
 cast
    : 'MAEK' expression 'A' < type >
    ;
+*/
 
-all
-   : 'ALL OF' expression ('AN' expression)* 'MKAY?'
-   ;
-
-any
-   : 'ANY OF' expression ('AN' expression)* 'MKAY?'
-   ;
-
-not
-   : 'NOT' expression
-   ;
-
+/*
 func
    : LABEL expression+ 'MKAY?'
    ;
-*/
+ */   
 
 LABEL
    : ('a' .. 'z' | 'A' .. 'Z') ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_')*

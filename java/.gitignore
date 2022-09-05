@@ -1,11 +1,5 @@
 # Ignore Gradle project-specific cache directory
 .gradle
 
-bin
-
 # Ignore Gradle build output directory
 build
-
-# Ignore generated source; all source is generated from g4
-src/main/antlr
-src/main/java

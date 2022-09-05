@@ -11,34 +11,72 @@ using Interpreter;
 [TestClass]
 public class SourceInterpreterTests
 {
-    public static string ReadExampleFile(string name)
+    public static (Interpreter, String) RunExample(string filename, string input = "")
     {
-        var filepath = String.Format(@"../../../../../examples/{0}", name);
-        return File.ReadAllText(filepath);
+        var interp = new Interpreter();
+
+        interp.In = new StringReader(input);
+        interp.Out = new StringWriter();
+
+        var filepath = String.Format(@"../../../../../examples/{0}", filename);
+        interp.Execute(File.ReadAllText(filepath));
+
+        var outString = ((StringWriter)interp.Out).ToString();
+        return (interp, outString);
     }
     [TestMethod]
     public void hai()
     {
-        var input = "";
-        var interp = new Interpreter();
-        interp.In = new StringReader(input);
-        interp.Out = new StringWriter();
+        var (_, result) = RunExample("hai.lol");
 
-        interp.Execute(ReadExampleFile("hai.lol"));
+        Assert.AreEqual("", result);
+    }
+    [TestMethod]
+    public void hai12()
+    {
+        var (_, result) = RunExample("hai12.lol");
 
-        Assert.AreEqual("", interp.Out.ToString());
+        Assert.AreEqual("", result);
+    }
+    [TestMethod]
+    public void hello()
+    {
+        var (_, result) = RunExample("hello.lol");
+
+        Assert.AreEqual("Hello world\n", result);
     }
 
     [TestMethod]
+    public void justvar()
+    {
+        var (_, result) = RunExample("justvar.lol");
+
+        Assert.AreEqual("", result);
+    }
+    [TestMethod]
     public void var()
     {
-        var input = "";
-        var interp = new Interpreter();
-        interp.In = new StringReader(input);
-        interp.Out = new StringWriter();
+        var (_, result) = RunExample("var.lol");
 
-        interp.Execute(ReadExampleFile("var.lol"));
+        Assert.AreEqual("The var is 0\n", result);
+    }
+    [TestMethod]
+    public void inputage()
+    {
+        var (_, result) = RunExample("inputage.lol", "27\n");
 
-        Assert.AreEqual("The var is 0\n", interp.Out.ToString());
+        Assert.AreEqual("What is your age?\nYour age is 27\n", result);
+    }
+    [TestMethod]
+    public void assign()
+    {
+        var (_, result) = RunExample("assign.lol", "27\n");
+
+        Assert.AreEqual(
+            "What is your age?\n" +
+            "Your age is 27\n" +
+            "Your age is now 50\n" +
+            "UR OLD!\n", 
+            result);
     }
 }
