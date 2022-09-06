@@ -126,6 +126,18 @@ class Interpreter {
                 is Atom -> Variant(expr.value)
                 is Label -> lookup(expr.name)
                 is BinaryOp -> {
+                    /*
+                    Math is performed as integer math in the presence of two NUMBRs, 
+                    but if either of the expressions are NUMBARs, 
+                    then floating point math takes over.
+
+                    If one or both arguments are a YARN, they get interpreted as NUMBARs
+                    if the YARN has a decimal point, and NUMBRs otherwise, then execution 
+                    proceeds as above.
+
+                    If one or another of the arguments cannot be safely cast to a numerical 
+                    type, then it fails with an error.
+                     */
                     val left = evaluate(expr.left)
                     val right = evaluate(expr.right)
                     val opInt : (Long, Long) -> Long = when (expr.op.name) {
@@ -145,19 +157,6 @@ class Interpreter {
                         else -> throw Exception("Implementation error: Unrecognized operator: ${expr.op}")
                     }
 
-                    // Type conversions
-                    /*
-                    Math is performed as integer math in the presence of two NUMBRs, 
-                    but if either of the expressions are NUMBARs, 
-                    then floating point math takes over.
-
-                    If one or both arguments are a YARN, they get interpreted as NUMBARs
-                    if the YARN has a decimal point, and NUMBRs otherwise, then execution 
-                    proceeds as above.
-
-                    If one or another of the arguments cannot be safely cast to a numerical 
-                    type, then it fails with an error.
-                     */
                     return if (left.isNumbr() && right.isNumbr()) 
                             Variant(opInt(left.asInt64(), right.asInt64()))
                         else if (left.isNumbar() || right.isNumbar())
