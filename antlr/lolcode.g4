@@ -19,16 +19,6 @@ closing
    : 'KTHXBYE'
    ;
 
-/*
-type
-   : 'YARN'
-   | 'NUMBR'
-   | 'NUMBAR'
-   | 'TROOF'
-   | 'BUKKIT'
-   ;
- */
-
 code_block: statement+;
 
 statement
@@ -94,14 +84,43 @@ func_decl
 */
 
 expression
-   : /*comparison
-   | maths
+   : maths
+   | ATOM
+   | LABEL
+   /*
+   | comparison
    | logicals
    | cast
-   | func
-   | 
-   */ATOM
-   | LABEL
+   | func_call
+   */
+   ;
+
+maths
+   : add
+   | sub
+   | mul
+   | div
+   | mod
+   ;
+
+add
+   : 'SUM OF' expression 'AN' expression
+   ;
+
+sub
+   : 'DIFF OF' expression 'AN' expression
+   ;
+
+mul
+   : 'PRODUKT OF' expression 'AN' expression
+   ;
+
+div
+   : 'QUOSHUNT OF' expression 'AN' expression
+   ;
+
+mod
+   : 'MOD OF' expression 'AN' expression
    ;
 
 /*
@@ -160,44 +179,22 @@ either
  */
 
 /*
-maths
-   : add
-   | sub
-   | mul
-   | div
-   | mod
-   ;
-
-add
-   : 'SUM OF' expression 'AN' expression
-   ;
-
-sub
-   : 'DIFF OF' expression 'AN' expression
-   ;
-
-mul
-   : 'PRODUKT OF' expression 'AN' expression
-   ;
-
-div
-   : 'QUOSHUNT OF' expression 'AN' expression
-   ;
-
-mod
-   : 'MOD OF' expression 'AN' expression
-   ;
-*/
-
-
-/*
 cast
    : 'MAEK' expression 'A' < type >
    ;
-*/
+
+type
+   : 'YARN'
+   | 'NUMBR'
+   | 'NUMBAR'
+   | 'TROOF'
+   | 'BUKKIT'
+   ;
+ */
+
 
 /*
-func
+func_call
    : LABEL expression+ 'MKAY?'
    ;
  */   
