@@ -71,76 +71,26 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
     }
 
     override fun visitMaths(ctx: lolcodeParser.MathsContext) : Node {
+        val op = 
+            if ((ctx.op.text).equals("SUM OF"))
+                BinaryOp.Operator.ADD
+            else if ((ctx.op.text).equals("DIFF OF"))
+                BinaryOp.Operator.SUB
+            else if ((ctx.op.text).equals("PRODUKT OF"))
+                BinaryOp.Operator.MUL
+            else if ((ctx.op.text).equals("QUOSHUNT OF"))
+                BinaryOp.Operator.DIV
+            else if ((ctx.op.text).equals("MOD OF"))
+                BinaryOp.Operator.MOD
+            else
+                throw Exception("Unrecognized operator: ${ctx.op.text}")
+
         return BinaryOp(
             this.visit(ctx.left) as Expression, 
-            BinaryOp.Operator.ADD, 
+            op,
             this.visit(ctx.right) as Expression)
     }
 }
-
-/*
-class ASTBuilder() : lolcodeBaseListener() {
-    val program = Program()
-    var blockStack = Stack<CodeBlock>()
-
-    override fun enterProgram(ctx : lolcodeParser.ProgramContext) { 
-        program.version = if (ctx.opening().version() != null) ctx.opening().version().getText() else "1.2";
-    }
-    override fun enterCode_block(ctx : lolcodeParser.Code_blockContext) {
-        val codeBlock = if (blockStack.isEmpty()) program.codeBlock else CodeBlock()
-        blockStack.push(codeBlock)
-    }
-    override fun exitCode_block(ctx : lolcodeParser.Code_blockContext) {
-        blockStack.pop()
-    }
-    override fun enterDeclaration(ctx : lolcodeParser.DeclarationContext) {
-        val decl = Declaration(
-            ctx.LABEL().text, 
-            if (ctx.expression() != null) 
-                ctx.expression().text
-            else
-                ""
-        )
-        blockStack.peek().add(decl);
-    }
-    override fun enterInput_block(ctx : lolcodeParser.Input_blockContext) {
-        val input = Input(ctx.LABEL().text)
-        blockStack.peek().add(input)
-    }
-    override fun enterPrint_block(ctx : lolcodeParser.Print_blockContext) {
-        val printAST = Print()
-        ctx.expression().forEach { it ->
-            if (it.ATOM() != null) {
-                printAST.add(Atom(it.ATOM().text.replace("\"", "")))
-            }
-            else if (it.LABEL() != null) {
-                printAST.add(Label(it.LABEL().text))
-            }
-            else {
-                throw Exception("Unrecognized node in printAST_block: " + it)
-            }
-        }
-        blockStack.peek().add(printAST)
-    }
-    override fun enterAssignment(ctx: lolcodeParser.AssignmentContext) {
-        // This is wildly inefficient, and I probably need to move to Visitors
-        // here before this gets out of hand.
-        val label = ctx.LABEL().text
-        val expr : Expression = 
-            if (ctx.expression().LABEL() != null) {
-                Label(ctx.expression().LABEL().text)
-            }
-            else if (ctx.expression().ATOM() != null) {
-                Atom(ctx.expression().ATOM().text.replace("\"", ""))
-            }
-            else {
-                throw Exception("Unrecognized expression")
-            }
-        val assignment = Assignment(label, expr)
-        blockStack.peek().add(assignment)
-    }
-}
-*/
 
 // ====================================
 // Interpreter
@@ -180,9 +130,10 @@ class Interpreter {
         val tokens = CommonTokenStream(lexer)
         val parser = lolcodeParser(tokens)
         val syntaxTree : ParseTree = parser.program()
-        val program = ASTVisitor().visit(syntaxTree) as Program
-        run(program)
+        val programASTNode = ASTVisitor().visit(syntaxTree) as Program
+        run(programASTNode)
     }
+
     fun run(program : Program) {
         this.program = program
         run(this.program.codeBlock)
@@ -244,9 +195,6 @@ class Interpreter {
             }
             is Print -> {
                 var message = stmt.expressions.joinToString(prefix="", postfix="", separator="") { 
-                    // print_blocks can only have expressions,
-                    // so this should always be a safe cast
-                    print("PRINTING ${evaluate(it).asString()}")
                     evaluate(it).asString()
                 }
                 ioOut.println(message)
@@ -259,7 +207,7 @@ class Interpreter {
                 store(stmt.label, evaluate(stmt.expr))
             }
             is Expression -> {
-                val _unused : Variant = evaluate(stmt)
+                evaluate(stmt)
             }
         }
     }

@@ -84,4 +84,9 @@ class ScriptTests {
             "UR OLD!\n",
             outBuffer.toString())
     }
+    @Test fun mathsExample() {
+        val (_, outBuffer) = executeExampleFile("maths.lol")
+        assertEquals("4\n0\n100\n5\n0\n",
+            outBuffer.toString())
+    }
 }
