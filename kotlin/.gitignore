@@ -4,6 +4,9 @@
 # Ignore Gradle build output directory
 build
 
+# Somehow source keeps appearing here
+bin
+
 # Ignore local-JAR directory (which is where we put
 # ANTLR-generated JAR file)
 engine/libs/lolcodeparser.jar

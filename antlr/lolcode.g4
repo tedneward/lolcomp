@@ -59,10 +59,6 @@ comment
    | 'OBTW' ~ 'TLDR'
    ;
 
-import
-   : 'CAN HAS' LABEL '?'
-   ;
-
 loop
    : 'IM IN YR' LABEL 'WILE' expression code_block 'IM OUTTA YR' LABEL
    ;
@@ -81,12 +77,16 @@ else_if_block
 func_decl
    : 'HOW DUZ I' LABEL (('YR' LABEL) ('AN YR' LABEL)*)? code_block 'IF U SAY SO'
    ;
+
+import
+   : 'CAN HAS' LABEL '?'
+   ;
 */
 
 expression
    : maths
-   | ATOM
-   | LABEL
+   | atom=ATOM
+   | label=LABEL
    /*
    | comparison
    | logicals
@@ -96,31 +96,8 @@ expression
    ;
 
 maths
-   : add
-   | sub
-   | mul
-   | div
-   | mod
-   ;
-
-add
-   : 'SUM OF' expression 'AN' expression
-   ;
-
-sub
-   : 'DIFF OF' expression 'AN' expression
-   ;
-
-mul
-   : 'PRODUKT OF' expression 'AN' expression
-   ;
-
-div
-   : 'QUOSHUNT OF' expression 'AN' expression
-   ;
-
-mod
-   : 'MOD OF' expression 'AN' expression
+   : op=('PRODUKT OF'|'QUOSHUNT OF'|'MOD OF') left=expression 'AN' right=expression
+   | op=('SUM OF'|'DIFF OF') left=expression 'AN' right=expression
    ;
 
 /*
@@ -150,10 +127,10 @@ less
 
 /*
 logicals
-   : both
-   | either
-   | all
+   : all
    | any
+   | both
+   | either
    | not
    ;
 
@@ -165,16 +142,16 @@ any
    : 'ANY OF' expression ('AN' expression)* 'MKAY?'
    ;
 
-not
-   : 'NOT' expression
-   ;
-
 both
    : 'BOTH OF' expression 'AN' expression
    ;
 
 either
    : 'EITHER OF' expression 'AN' expression
+   ;
+
+not
+   : 'NOT' expression
    ;
  */
 

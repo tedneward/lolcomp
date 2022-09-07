@@ -11,6 +11,74 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker
 
 import com.tedneward.lolcode.ast.*
 
+class ASTVisitor() : lolcodeBaseVisitor<Node>() {
+    var program = Program()
+
+    override fun visitProgram(ctx: lolcodeParser.ProgramContext) : Node {
+        program.version = 
+            if (ctx.opening().version() != null) 
+                ctx.opening().version().text
+            else
+                "1.2"
+
+        if (ctx.code_block() != null)
+            program.codeBlock = this.visit(ctx.code_block()) as CodeBlock
+
+        return program
+    }
+
+	override fun visitCode_block(ctx: lolcodeParser.Code_blockContext) : Node {
+        val cb = CodeBlock()
+        for (stmt in ctx.statement()) {
+            val node = visit(stmt)
+            cb.statements.add(node as Statement)
+        }
+        return cb
+    }
+
+	override fun visitDeclaration(ctx: lolcodeParser.DeclarationContext) : Node {
+        return Declaration(ctx.LABEL().text, this.visit(ctx.expression()) as Expression)
+    }
+
+    override fun visitExpression(ctx: lolcodeParser.ExpressionContext) : Node {
+        return if (ctx.ATOM() != null)
+            Atom(ctx.ATOM().text.replace("\"", ""))
+        else if (ctx.LABEL() != null)
+            Label(ctx.LABEL().text)
+        else if (ctx.maths() != null)
+            this.visit(ctx.maths())
+        else
+            throw Exception("Somehow expression ${ctx} didn't generate a node")
+    }
+
+	override fun visitPrint_block(ctx: lolcodeParser.Print_blockContext) : Node {
+        var prnt = Print()
+
+        for (expr in ctx.expression()) {
+            val node = visit(expr)
+            prnt.expressions.add(node as Expression)
+        }
+
+        return prnt
+    }
+
+	override fun visitInput_block(ctx: lolcodeParser.Input_blockContext) : Node {
+        return Input(ctx.LABEL().text)
+    }
+    
+	override fun visitAssignment(ctx: lolcodeParser.AssignmentContext) : Node {
+        return Assignment(ctx.LABEL().text, this.visit(ctx.expression()) as Expression)
+    }
+
+    override fun visitMaths(ctx: lolcodeParser.MathsContext) : Node {
+        return BinaryOp(
+            this.visit(ctx.left) as Expression, 
+            BinaryOp.Operator.ADD, 
+            this.visit(ctx.right) as Expression)
+    }
+}
+
+/*
 class ASTBuilder() : lolcodeBaseListener() {
     val program = Program()
     var blockStack = Stack<CodeBlock>()
@@ -72,6 +140,7 @@ class ASTBuilder() : lolcodeBaseListener() {
         blockStack.peek().add(assignment)
     }
 }
+*/
 
 // ====================================
 // Interpreter
@@ -110,9 +179,9 @@ class Interpreter {
         val lexer = lolcodeLexer(CharStreams.fromString(code))
         val tokens = CommonTokenStream(lexer)
         val parser = lolcodeParser(tokens)
-        val builder = ASTBuilder()
-        ParseTreeWalker.DEFAULT.walk(builder, parser.program())
-        run(builder.program)
+        val syntaxTree : ParseTree = parser.program()
+        val program = ASTVisitor().visit(syntaxTree) as Program
+        run(program)
     }
     fun run(program : Program) {
         this.program = program
@@ -121,87 +190,76 @@ class Interpreter {
     fun run(codeBlock : CodeBlock) {
         pushScope()
 
-        fun evaluate(expr : Expression) : Variant {
-            return when (expr) {
-                is Atom -> Variant(expr.value)
-                is Label -> lookup(expr.name)
-                is BinaryOp -> {
-                    /*
-                    Math is performed as integer math in the presence of two NUMBRs, 
-                    but if either of the expressions are NUMBARs, 
-                    then floating point math takes over.
-
-                    If one or both arguments are a YARN, they get interpreted as NUMBARs
-                    if the YARN has a decimal point, and NUMBRs otherwise, then execution 
-                    proceeds as above.
-
-                    If one or another of the arguments cannot be safely cast to a numerical 
-                    type, then it fails with an error.
-                     */
-                    val left = evaluate(expr.left)
-                    val right = evaluate(expr.right)
-                    val opInt : (Long, Long) -> Long = when (expr.op.name) {
-                        "ADD" -> { l, r -> l + r }
-                        "SUB" -> { l, r -> l - r }
-                        "MUL" -> { l, r -> l * r }
-                        "DIV" -> { l, r -> l / r }
-                        "MOD" -> { l, r -> l % r }
-                        else -> throw Exception("Implementation error: Unrecognized operator: ${expr.op}")
-                    }
-                    val opDbl : (Double, Double) -> Double = when (expr.op.name) {
-                        "ADD" -> { l, r -> l + r }
-                        "SUB" -> { l, r -> l - r }
-                        "MUL" -> { l, r -> l * r }
-                        "DIV" -> { l, r -> l / r }
-                        "MOD" -> { l, r -> l % r }
-                        else -> throw Exception("Implementation error: Unrecognized operator: ${expr.op}")
-                    }
-
-                    return if (left.isNumbr() && right.isNumbr()) 
-                            Variant(opInt(left.asInt64(), right.asInt64()))
-                        else if (left.isNumbar() || right.isNumbar())
-                            Variant(opDbl(left.asDouble(), right.asDouble())) 
-                        else if (left.isYarn() || right.isYarn() && 
-                            left.canConvertNumbr() && right.canConvertNumbr())
-                            Variant(opInt(left.asInt64(), right.asInt64()))
-                        else if (left.isYarn() || right.isYarn() &&
-                            left.canConvertNumbar() && right.canConvertNumbar())
-                            Variant(opDbl(left.asDouble(), right.asDouble())) 
-                        else
-                            throw Exception("CANT MATH ON WHATEVR")
-                }
-                else ->
-                    throw Exception("Unrecognized expression: ${expr}")
-            }
+        for (stmt in codeBlock.statements) {
+            evaluate(stmt)
         }
+    }
 
-        for (node in codeBlock.children) {
-            when (node) {
-                is Declaration -> {
-                    store(node.name, Variant(node.initialValue))
+    fun evaluate(expr : Expression) : Variant {
+        return when (expr) {
+            is Atom -> Variant(expr.value)
+            is Label -> lookup(expr.name)
+            is BinaryOp -> {
+                val left = evaluate(expr.left)
+                val right = evaluate(expr.right)
+                val opInt : (Long, Long) -> Long = when (expr.op.name) {
+                    "ADD" -> { l, r -> l + r }
+                    "SUB" -> { l, r -> l - r }
+                    "MUL" -> { l, r -> l * r }
+                    "DIV" -> { l, r -> l / r }
+                    "MOD" -> { l, r -> l % r }
+                    else -> throw Exception("Implementation error: Unrecognized operator: ${expr.op}")
                 }
-                is Print -> {
-                    var message = node.children.joinToString(prefix="", postfix="", separator="") { 
-                        // print_blocks can only have expressions,
-                        // so this should always be a safe cast
-                        evaluate(it as Expression).asString()
-                    }
-                    ioOut.println(message)
+                val opDbl : (Double, Double) -> Double = when (expr.op.name) {
+                    "ADD" -> { l, r -> l + r }
+                    "SUB" -> { l, r -> l - r }
+                    "MUL" -> { l, r -> l * r }
+                    "DIV" -> { l, r -> l / r }
+                    "MOD" -> { l, r -> l % r }
+                    else -> throw Exception("Implementation error: Unrecognized operator: ${expr.op}")
                 }
-                is Input -> {
-                    var input = ioIn.bufferedReader().readLine()
-                    store(node.label, Variant(input))
+
+                return if (left.isNumbr() && right.isNumbr()) 
+                        Variant(opInt(left.asInt64(), right.asInt64()))
+                    else if (left.isNumbar() || right.isNumbar())
+                        Variant(opDbl(left.asDouble(), right.asDouble())) 
+                    else if (left.isYarn() || right.isYarn() && 
+                        left.canConvertNumbr() && right.canConvertNumbr())
+                        Variant(opInt(left.asInt64(), right.asInt64()))
+                    else if (left.isYarn() || right.isYarn() &&
+                        left.canConvertNumbar() && right.canConvertNumbar())
+                        Variant(opDbl(left.asDouble(), right.asDouble())) 
+                    else
+                        throw Exception("CANT MATH ON WHATEVR")
+            }
+            else ->
+                throw Exception("Unrecognized expression: ${expr}")
+        }
+    }
+
+    fun evaluate(stmt : Statement) {
+        when (stmt) {
+            is Declaration -> {
+                store(stmt.name, evaluate(stmt.expr))
+            }
+            is Print -> {
+                var message = stmt.expressions.joinToString(prefix="", postfix="", separator="") { 
+                    // print_blocks can only have expressions,
+                    // so this should always be a safe cast
+                    print("PRINTING ${evaluate(it).asString()}")
+                    evaluate(it).asString()
                 }
-                is Assignment -> {
-                    store(node.label, evaluate(node.expression))
-                }
-                is BinaryOp -> {
-                    // This throws away the result--is this a bug?!?
-                    evaluate(node)
-                }
-                else -> {
-                    System.out.println("Unrecognized node: ${node}")
-                }
+                ioOut.println(message)
+            }
+            is Input -> {
+                var input = ioIn.bufferedReader().readLine()
+                store(stmt.label, Variant(input))
+            }
+            is Assignment -> {
+                store(stmt.label, evaluate(stmt.expr))
+            }
+            is Expression -> {
+                val _unused : Variant = evaluate(stmt)
             }
         }
     }

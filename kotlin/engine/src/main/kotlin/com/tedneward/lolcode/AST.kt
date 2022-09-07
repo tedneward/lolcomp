@@ -5,16 +5,14 @@ import java.io.BufferedInputStream
 
 // ====================================
 // Abstract Syntax Tree
-open class Node(val children: MutableList<Node> = mutableListOf()) { 
-    fun add(node : Node) { children.add(node) }
+open class Node() { }
 
+class CodeBlock() : Node() {
+    val statements: MutableList<Statement> = mutableListOf()
     override fun toString() : String {
-        val mappedChildren = children.map { it.toString() }
-        return "${mappedChildren}"
+        return "(codeBlock statements:${statements.map { it.toString() }})"
     }
 }
-
-class CodeBlock() : Node() { }
 
 class Program(var version: String = "", var codeBlock: CodeBlock = CodeBlock()) : Node() { 
     override fun toString() : String {
@@ -24,21 +22,28 @@ class Program(var version: String = "", var codeBlock: CodeBlock = CodeBlock()) 
 
 open class Statement : Node() { }
 
-class Declaration(var name : String, var initialValue : String) : Statement() { 
+class Declaration(var name : String, var expr : Expression) : Statement() { 
     override fun toString() : String {
-        return "(decl ${name} ${initialValue})"
+        return "(decl ${name} ${expr})"
     }
 }
 
 class Print() : Statement() {
+    val expressions: MutableList<Expression> = mutableListOf()
     override fun toString() : String {
-        return "(print ${super.toString()})"
+        return "(print ${expressions.map { it.toString() }})"
     }
 }
 
 class Input(val label : String) : Statement() {
     override fun toString() : String {
         return "(input ${label})"
+    }
+}
+
+class Assignment(val label : String, val expr : Expression) : Statement() {
+    override fun toString() : String {
+        return "(assign ${label} ${expr})"
     }
 }
 
@@ -55,18 +60,10 @@ class Label(val name : String) : Expression() {
     }
 }
 
-class Assignment(val label : String, val expression : Expression) : Node() {
-    override fun toString() : String {
-        return "(assign ${label} ${expression})"
-    }
-}
-
 class BinaryOp(val left : Expression, val op : Operator, val right : Expression) : Expression() {
-    enum class Operator {
-        ADD, SUB, MUL, DIV, MOD
-    }
+    enum class Operator { ADD, SUB, MUL, DIV, MOD }
     
     override fun toString() : String {
-        return "(${left} ${op} ${right})"
+        return "(binary_op ${left} ${op} ${right})"
     }
 }

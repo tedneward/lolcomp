@@ -15,10 +15,12 @@ antlrtest: antlrbuild
 jarbuild:
 	echo ========== Building ANTLR JAR
 	cd antlr/jar; gradle build; cd ../..
+	cp antlr/jar/build/libs/lolcodeparser.jar kotlin/engine/libs
 
 clrbuild:
 	echo ========== Building ANTLR CLR
 	cd antlr/clr; dotnet build; cd ../..
+	cp antlr/clr/bin/Debug/net6.0/LOLCODEParser.dll csharp/lib
 
 # ========== Test everything
 #
@@ -38,7 +40,6 @@ clean:
 kotlin: kotlinbuild kotlintest
 
 kotlinbuild: jarbuild
-	cp antlr/jar/build/libs/lolcodeparser.jar kotlin/engine/libs
 	echo ========== Building Kotlin Engine....
 	cd kotlin; gradle build; cd ..
 
@@ -51,7 +52,6 @@ kotlintest: kotlinbuild
 csharp: csharpbuild csharptest
 
 csharpbuild: clrbuild
-	cp antlr/clr/bin/Debug/net6.0/LOLCODEParser.dll csharp/lib
 	echo ========== Building CSharp Engine....
 	cd csharp; dotnet build; cd ..
 

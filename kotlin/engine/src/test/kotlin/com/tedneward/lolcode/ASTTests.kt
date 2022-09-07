@@ -10,18 +10,20 @@ import kotlin.test.assertTrue
 class ASTTests {
     @Test
     fun simpleCalculations() {
-        var program = Program("1.2")
-        program.codeBlock.children.add(Declaration("age", "27"))
-        var print = Print()
-        print.children.add(Atom("Ur age is "))
-        print.children.add(Label("age"))
-        program.codeBlock.children.add(print)
-
         var interp = Interpreter()
         val outBuffer = java.io.ByteArrayOutputStream()
         interp.ioOut = java.io.PrintStream(outBuffer)
 
-        interp.run(program)
+        var program = Program("1.2")
+
+        program.codeBlock.statements.add(Declaration("age", Atom("27")))
+
+        var print = Print()
+        print.expressions.add(Atom("Ur age is "))
+        print.expressions.add(Label("age"))
+        program.codeBlock.statements.add(print)
+
+        interp.run(program.codeBlock)
 
         assertEquals("Ur age is 27\n", outBuffer.toString())
     }

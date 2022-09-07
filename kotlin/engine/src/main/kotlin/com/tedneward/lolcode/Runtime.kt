@@ -94,6 +94,7 @@ class Variant(v : Any? = null) {
                 else
                     Pair(TYPE.YARN, v.toString())
             }
+            is Variant -> Pair(TYPE.YARN, v.asString())
             else -> Pair(TYPE.YARN, v.toString()) // Assume it's a String if nothing else works
         }
         type = ty
@@ -124,14 +125,7 @@ class Variant(v : Any? = null) {
             if (this == other)
                 return true
 
-            // Type-equal?
-            if (this.type == other.type) {
-                return this.value.equals(other.value)
-            }
-            // Fine, just drop to a string comparison--it's slow but it works
-            else {
-                return this.asString().equals(other.asString())
-            }
+            return this.asString().equals(other.asString())
         }
 
         return false
