@@ -43,15 +43,20 @@ Test with `dotnet test -l "console;verbosity=detailed"`.
 ## Java -- JVM
 Test with `gradle test`.
 
-## JS -- JS
+## JS
+(Build ANTLR parser directly from ANTLR g4 ?)
 
 ## C++
+(Build ANTLR parser directly from ANTLR g4)
 
 ## Python
+(Build ANTLR parser directly from ANTLR g4)
 
 ## Ruby
+(Build ANTLR parser directly from ANTLR g4 ?)
 
 ## Swift
+(Build ANTLR parser directly from ANTLR g4)
 
 # Test against examples
 The `examples` dir has some LOLCODE programs in it for testing. These are invoked by the tests.
@@ -62,7 +67,7 @@ The `examples` dir has some LOLCODE programs in it for testing. These are invoke
 Generate grammar sufficient to parse/run "HAI 1.2/KTHXBYE":
 
 * Parser/g4: program, opening, code_block, closing
-* AST: Node, Program, CodeBlock; ASTBuilder
+* AST: Node, Program, CodeBlock; ASTVisitor
 * Interpreter: Interpreter execute, run
 
 Should be pretty quick, aside from the fact that we're setting up bare-bones infrastructure
@@ -70,44 +75,53 @@ Should be pretty quick, aside from the fact that we're setting up bare-bones inf
 ## Step 1: I HAS A
 
 * Parser/g4: Add declarations
-* AST: Declaration, Atom, Label
+* AST: Declaration, Atom, Label; ASTVisitor
 * Interpreter: Variant, Declaration branch (which holds map-of-String-to-Variants for scope)
 
-Variant should probably be a predefined class, because that thing is way bigger than I thought it would be when I first started. Whoof.
+Variant should probably be a predefined class, because that thing is way bigger than I thought it would be when I first started. Whoof. WAY bigger. Maths, comparisons, the whole shooting match.
 
 ## Step 2: VISIBLE
 
 * Parser/g4: print_block
-* AST: Print
-* Interpreter: Add ioOut/ioIn; Print branch (looping through Print children, printing Atoms, looking up Labels)
+* AST: Print; ASTVisitor
+* Interpreter: Add ioOut; `evaluate` Print
 
 ## Step 3: GIMMEH
 
 * Parser/g4: input_block
-* AST: Input
-* Interpreter: Input branch (reading from ioIn and storing to Variant-referenced-by-Label)
+* AST: Input; ASTVisitor
+* Interpreter: scopes; add ioIn; `evaluate` Input
 
 ## Step 4: Assignment
 
 * Parser/g4: assignment
-* AST: Assignment
-* Interpreter: Assignment
+* AST: Assignment; ASTVisitor
+* Interpreter: `evaluate` Assignment
 
 ## Step 5: Binary maths
 
 * Parser/g4: maths
-* AST: BinaryOp
-* Interpreter: BinaryOp
+* AST: BinaryOp; ASTVisitor
+* Interpreter: `evaluate` BinaryOp
 
 ## Step 6: Comparison operations
 
+* Parser/g4: comparison
+* AST: Comparison; ASTVisitor
+* Interpreter: `evaluate` Comparison
 
+## Step 7: Logical operations
 
+## Step 8: Branching
 
+## Step 9: Loops
+
+## Step 10: Functions
+
+## Step 11: Imports/Libraries
 
 # TODOs
 
 * Transpiler back-end(s)
 * Compiler back-end(s)
-* Someday, vary up the versions and respect them (somehow).
     

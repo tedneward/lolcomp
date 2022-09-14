@@ -5,113 +5,8 @@ package com.tedneward.lolcode
 
 import java.util.Stack
 import java.io.BufferedInputStream
-import org.antlr.v4.runtime.*
-import org.antlr.v4.runtime.tree.ParseTree
-import org.antlr.v4.runtime.tree.ParseTreeWalker
 
 import com.tedneward.lolcode.ast.*
-
-class ASTVisitor() : lolcodeBaseVisitor<Node>() {
-    var program = Program()
-
-    override fun visitProgram(ctx: lolcodeParser.ProgramContext) : Node {
-        program.version = 
-            if (ctx.opening().version() != null) 
-                ctx.opening().version().text
-            else
-                "1.2"
-
-        if (ctx.code_block() != null)
-            program.codeBlock = this.visit(ctx.code_block()) as CodeBlock
-
-        return program
-    }
-
-	override fun visitCode_block(ctx: lolcodeParser.Code_blockContext) : Node {
-        val cb = CodeBlock()
-        for (stmt in ctx.statement()) {
-            val node = visit(stmt)
-            cb.statements.add(node as Statement)
-        }
-        return cb
-    }
-
-	override fun visitDeclaration(ctx: lolcodeParser.DeclarationContext) : Node {
-        return Declaration(ctx.LABEL().text, this.visit(ctx.expression()) as Expression)
-    }
-
-    override fun visitExpression(ctx: lolcodeParser.ExpressionContext) : Node {
-        return if (ctx.ATOM() != null)
-            Atom(ctx.ATOM().text.replace("\"", ""))
-        else if (ctx.LABEL() != null)
-            Label(ctx.LABEL().text)
-        else if (ctx.maths() != null)
-            this.visit(ctx.maths())
-        else if (ctx.comparison() != null)
-            this.visit(ctx.comparison())
-        else
-            throw Exception("Somehow expression ${ctx} didn't generate a node")
-    }
-
-	override fun visitPrint_block(ctx: lolcodeParser.Print_blockContext) : Node {
-        var prnt = Print()
-
-        for (expr in ctx.expression()) {
-            val node = visit(expr)
-            prnt.expressions.add(node as Expression)
-        }
-
-        return prnt
-    }
-
-	override fun visitInput_block(ctx: lolcodeParser.Input_blockContext) : Node {
-        return Input(ctx.LABEL().text)
-    }
-    
-	override fun visitAssignment(ctx: lolcodeParser.AssignmentContext) : Node {
-        return Assignment(ctx.LABEL().text, this.visit(ctx.expression()) as Expression)
-    }
-
-    override fun visitMaths(ctx: lolcodeParser.MathsContext) : Node {
-        val op = 
-            if ((ctx.op.text).equals("SUM OF"))
-                BinaryOp.Operator.ADD
-            else if ((ctx.op.text).equals("DIFF OF"))
-                BinaryOp.Operator.SUB
-            else if ((ctx.op.text).equals("PRODUKT OF"))
-                BinaryOp.Operator.MUL
-            else if ((ctx.op.text).equals("QUOSHUNT OF"))
-                BinaryOp.Operator.DIV
-            else if ((ctx.op.text).equals("MOD OF"))
-                BinaryOp.Operator.MOD
-            else
-                throw Exception("Unrecognized operator: ${ctx.op.text}")
-
-        return BinaryOp(
-            this.visit(ctx.left) as Expression, 
-            op,
-            this.visit(ctx.right) as Expression)
-    }
-
-    override fun visitComparison(ctx: lolcodeParser.ComparisonContext) : Node {
-        val op = 
-            if ((ctx.op.text).equals("BOTH SAEM"))
-                Comparison.Operator.EQU
-            else if ((ctx.op.text).equals("DIFFRINT"))
-                Comparison.Operator.NEQ
-            else if ((ctx.op.text).equals("BIGGR OF"))
-                Comparison.Operator.GT
-            else if ((ctx.op.text).equals("SMALLR OF"))
-                Comparison.Operator.LT
-            else
-                throw Exception("Unrecognized operator: ${ctx.op.text}")
-
-        return Comparison(
-            this.visit(ctx.left) as Expression, 
-            op,
-            this.visit(ctx.right) as Expression)
-    }
-}
 
 // ====================================
 // Interpreter
@@ -147,11 +42,7 @@ class Interpreter {
     // Run, interpreter, run
     //
     fun execute(code : String) {
-        val lexer = lolcodeLexer(CharStreams.fromString(code))
-        val tokens = CommonTokenStream(lexer)
-        val parser = lolcodeParser(tokens)
-        val syntaxTree : ParseTree = parser.program()
-        val programASTNode = ASTVisitor().visit(syntaxTree) as Program
+        val programASTNode = ASTVisitor.parseToAST(code)
         run(programASTNode)
     }
 

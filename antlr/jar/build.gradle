@@ -7,7 +7,7 @@ repositories {
     mavenCentral()
 }
 
-def antlrPackage = 'com.tedneward.lolcode'
+def antlrPackage = 'com.tedneward.lolcode.parser'
 def antlrPackagePath = antlrPackage.replaceAll('\\.', '/')
 def antlrPackageFile = file("${projectDir}/src/main/java/${antlrPackagePath}")
 
