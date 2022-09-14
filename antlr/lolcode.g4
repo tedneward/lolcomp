@@ -3,7 +3,7 @@ Reference: https://github.com/jynnantonix/lolcode/blob/master/BNFGrammar.txt
 */
 grammar lolcode;
 
-program: opening code_block? closing? EOF;
+program: comment? opening code_block? closing? EOF;
    
 opening
    : 'HAI' version?
@@ -24,16 +24,21 @@ code_block: statement+;
 statement
    : declaration
    | expression
+   | comment
    | print_block
    | input_block
    | assignment
    /*
-   | comment
    | if_block
    | loop
    | import
    | func_decl
    */
+   ;
+
+comment
+   : SINGLE_LINE_COMMENT 
+   | MULTI_LINE_COMMENT
    ;
 
 declaration
@@ -54,11 +59,6 @@ assignment
    ;
 
 /*
-comment
-   : 'BTW' ~ [\r\n]*
-   | 'OBTW' ~ 'TLDR'
-   ;
-
 loop
    : 'IM IN YR' LABEL 'WILE' expression code_block 'IM OUTTA YR' LABEL
    ;
@@ -111,20 +111,6 @@ logicals
    ;
  */
 
-/*
-cast
-   : 'MAEK' expression 'A' < type >
-   ;
-
-type
-   : 'YARN'
-   | 'NUMBR'
-   | 'NUMBAR'
-   | 'TROOF'
-   | 'BUKKIT'
-   ;
- */
-
 
 /*
 func_call
@@ -159,3 +145,25 @@ WS
    : (' ' | '\t') -> skip
    ;
 
+SINGLE_LINE_COMMENT
+   : 'BTW' ~('\r' | '\n')* -> skip
+   ;
+
+MULTI_LINE_COMMENT
+   : 'OBTW' .*? 'TLDR' -> skip
+   ;
+
+/* ============= 
+   Not going to use types but here's the declarations for posterity's sake
+   ============= 
+cast
+   : 'MAEK' expression 'A' < type >
+   ;
+type
+   : 'YARN'
+   | 'NUMBR'
+   | 'NUMBAR'
+   | 'TROOF'
+   | 'BUKKIT'
+   ;
+ */

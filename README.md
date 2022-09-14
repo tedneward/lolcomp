@@ -72,6 +72,10 @@ Generate grammar sufficient to parse/run "HAI 1.2/KTHXBYE":
 
 Should be pretty quick, aside from the fact that we're setting up bare-bones infrastructure
 
+## Step 0.5: Comments?
+
+* Parser/g4: comment, SINGLE_LINE_COMMENT, MULTI_LINE_COMMENT
+
 ## Step 1: I HAS A
 
 * Parser/g4: Add declarations
