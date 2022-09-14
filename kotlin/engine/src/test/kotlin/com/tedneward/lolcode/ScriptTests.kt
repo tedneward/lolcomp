@@ -89,4 +89,9 @@ class ScriptTests {
         assertEquals("4\n0\n100\n5\n0\n",
             outBuffer.toString())
     }
+    @Test fun comparisonsExample() {
+        val (_, outBuffer) = executeExampleFile("comparisons.lol")
+        assertEquals("FAIL\nWIN\nFAIL\nWIN\n",
+            outBuffer.toString())
+    }
 }

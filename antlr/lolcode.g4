@@ -85,12 +85,11 @@ import
 
 expression
    : maths
+   | comparison
    | atom=ATOM
    | label=LABEL
    /*
-   | comparison
    | logicals
-   | cast
    | func_call
    */
    ;
@@ -100,58 +99,15 @@ maths
    | op=('SUM OF'|'DIFF OF') left=expression 'AN' right=expression
    ;
 
-/*
 comparison
-   : equals
-   | not_equals
-   | greater
-   | less
+   : op=('BOTH SAEM'|'DIFFRINT'|'BIGGR OF'|'SMALLR OF') left=expression 'AN' right=expression
    ;
-
-equals
-   : 'BOTH SAEM' expression 'AN' expression
-   ;
-
-not_equals
-   : 'DIFFRINT' expression 'AN' expression
-   ;
-
-greater
-   : 'BIGGR OF' expression 'AN' expression
-   ;
-
-less
-   : 'SMALLR OF' expression 'AN' expression
-   ;
- */
 
 /*
 logicals
-   : all
-   | any
-   | both
-   | either
-   | not
-   ;
-
-all
-   : 'ALL OF' expression ('AN' expression)* 'MKAY?'
-   ;
-
-any
-   : 'ANY OF' expression ('AN' expression)* 'MKAY?'
-   ;
-
-both
-   : 'BOTH OF' expression 'AN' expression
-   ;
-
-either
-   : 'EITHER OF' expression 'AN' expression
-   ;
-
-not
-   : 'NOT' expression
+   : op=('ALL OF'|'ANY OF') ('AN' expression)* 'MKAY?'
+   | op=('BOTH OF'|'EITHER OF') left=expression 'AN' right=expression
+   | 'NOT' expression
    ;
  */
 

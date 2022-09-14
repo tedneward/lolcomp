@@ -67,3 +67,11 @@ class BinaryOp(val left : Expression, val op : Operator, val right : Expression)
         return "(binary_op ${left} ${op} ${right})"
     }
 }
+
+class Comparison(val left : Expression, val op : Operator, val right : Expression) : Expression() {
+    enum class Operator { EQU, NEQ, GT, LT, GTE, LTE }
+
+    override fun toString() : String {
+        return "(comparison ${left} ${op} ${right})"
+    }
+}

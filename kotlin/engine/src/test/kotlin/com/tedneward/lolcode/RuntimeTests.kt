@@ -4,6 +4,7 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 class RuntimeTests {
@@ -80,5 +81,60 @@ class RuntimeTests {
         assertEquals(Variant(3).asDouble(), one.asDouble() + two.asDouble())
         assertEquals(Variant(4).asDouble(), one.asDouble() + three.asDouble())
         assertEquals(Variant(5).asDouble(), one.asDouble() + four.asDouble())
+    }
+
+    @Test fun comparisonTests() {
+        val threeI = Variant(3)
+        val threeD = Variant(3.0)
+        val threeSI = Variant("3")
+        val threeSD = Variant("3.0")
+        val fiveI = Variant(5)
+        val fiveD = Variant(5.0)
+        val fiveSI = Variant("5")
+        val fiveSD = Variant("5.0")
+
+        // Test equality variations
+        assertEquals(threeI, threeI)
+        assertEquals(threeD, threeD)
+        assertEquals(threeSI, threeSI)
+        assertEquals(threeSD, threeSD)
+
+        assertEquals(threeI, threeD)
+        assertEquals(threeD, threeI)
+        assertEquals(threeSI, threeI)
+        assertEquals(threeI, threeSI)
+        assertEquals(threeD, threeSD)
+        assertEquals(threeSD, threeD)
+
+        // Test inequality
+        assertNotEquals(threeI, fiveI)
+        assertNotEquals(threeD, fiveD)
+        assertNotEquals(threeSI, fiveSI)
+        assertNotEquals(threeSD, fiveSD)
+
+        assertNotEquals(threeI, fiveD)
+        assertNotEquals(threeD, fiveI)
+        assertNotEquals(threeSI, fiveI)
+        assertNotEquals(threeI, fiveSI)
+        assertNotEquals(threeD, fiveSD)
+        assertNotEquals(threeSD, fiveD)
+
+        assertTrue(threeI.lesserThan(fiveI))
+        assertTrue(fiveI.greaterThan(threeI))
+        assertTrue(threeD.lesserThan(fiveD))
+        assertTrue(fiveD.greaterThan(threeD))
+        assertTrue(threeSI.lesserThan(fiveSI))
+        assertTrue(fiveSI.greaterThan(threeSI))
+        assertTrue(threeSD.lesserThan(fiveSD))
+        assertTrue(fiveSD.greaterThan(threeSD))
+
+        assertTrue(threeI.lesserThan(fiveSI))
+        assertTrue(fiveI.greaterThan(threeSI))
+        assertTrue(threeD.lesserThan(fiveSD))
+        assertTrue(fiveD.greaterThan(threeSD))
+        assertTrue(threeSI.lesserThan(fiveI))
+        assertTrue(fiveSI.greaterThan(threeI))
+        assertTrue(threeSD.lesserThan(fiveD))
+        assertTrue(fiveSD.greaterThan(threeD))
     }
 }

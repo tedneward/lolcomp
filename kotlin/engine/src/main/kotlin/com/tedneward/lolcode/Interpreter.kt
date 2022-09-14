@@ -47,6 +47,8 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
             Label(ctx.LABEL().text)
         else if (ctx.maths() != null)
             this.visit(ctx.maths())
+        else if (ctx.comparison() != null)
+            this.visit(ctx.comparison())
         else
             throw Exception("Somehow expression ${ctx} didn't generate a node")
     }
@@ -86,6 +88,25 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
                 throw Exception("Unrecognized operator: ${ctx.op.text}")
 
         return BinaryOp(
+            this.visit(ctx.left) as Expression, 
+            op,
+            this.visit(ctx.right) as Expression)
+    }
+
+    override fun visitComparison(ctx: lolcodeParser.ComparisonContext) : Node {
+        val op = 
+            if ((ctx.op.text).equals("BOTH SAEM"))
+                Comparison.Operator.EQU
+            else if ((ctx.op.text).equals("DIFFRINT"))
+                Comparison.Operator.NEQ
+            else if ((ctx.op.text).equals("BIGGR OF"))
+                Comparison.Operator.GT
+            else if ((ctx.op.text).equals("SMALLR OF"))
+                Comparison.Operator.LT
+            else
+                throw Exception("Unrecognized operator: ${ctx.op.text}")
+
+        return Comparison(
             this.visit(ctx.left) as Expression, 
             op,
             this.visit(ctx.right) as Expression)
@@ -182,6 +203,19 @@ class Interpreter {
                         Variant(opDbl(left.asDouble(), right.asDouble())) 
                     else
                         throw Exception("CANT MATH ON WHATEVR")
+            }
+            is Comparison -> {
+                val left = evaluate(expr.left)
+                val right = evaluate(expr.right)
+                return Variant(when (expr.op.name) {
+                    "EQU" -> left.equals(right)
+                    "NEQ" -> ! (left.equals(right))
+                    "GT" -> left.greaterThan(right)
+                    "LT" -> left.lesserThan(right)
+                    "GTE" -> ! (left.lesserThan(right))
+                    "LTE" -> ! (left.greaterThan(right))
+                    else -> throw Exception("Implementation error: Unrecognized operator: ${expr.op}")
+                })
             }
             else ->
                 throw Exception("Unrecognized expression: ${expr}")

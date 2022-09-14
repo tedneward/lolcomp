@@ -121,13 +121,54 @@ class Variant(v : Any? = null) {
     }
 
     public override fun equals(other : Any?) : Boolean {
-        if (other is Variant) {
-            if (this == other)
-                return true
+        // Check for comparison to self
+        if (this === other)
+            return true
 
-            return this.asString().equals(other.asString())
+        // Make sure it's a Variant
+        if (other is Variant) {
+            if (canConvertNumbar() && other.canConvertNumbar()) {
+                return this.asDouble() == other.asDouble()
+            }
+
+            // Can we convert to int?
+            if (canConvertNumbr() && other.canConvertNumbr()) {
+                return this.asInt64() == other.asInt64()
+            }
+
+            // Fine, string-lexical ordinal comparison
+            return this.asString().compareTo(other.asString()) == 0
         }
 
         return false
+    }
+
+    public fun greaterThan(other : Variant) : Boolean {
+        // Can we convert to double?
+        if (canConvertNumbar() && other.canConvertNumbar()) {
+            return this.asDouble() > other.asDouble()
+        }
+
+        // Can we convert to int?
+        if (canConvertNumbr() && other.canConvertNumbr()) {
+            return this.asInt64() > other.asInt64()
+        }
+
+        // Fine, string-lexical ordinal comparison
+        return this.asString().compareTo(other.asString()) > 0
+    }
+    public fun lesserThan(other : Variant) : Boolean {
+        // Can we convert to double?
+        if (canConvertNumbar() && other.canConvertNumbar()) {
+            return this.asDouble() < other.asDouble()
+        }
+
+        // Can we convert to int?
+        if (canConvertNumbr() && other.canConvertNumbr()) {
+            return this.asInt64() < other.asInt64()
+        }
+
+        // Fine, string-lexical ordinal comparison
+        return this.asString().compareTo(other.asString()) < 0
     }
 }
