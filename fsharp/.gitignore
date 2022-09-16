@@ -1,0 +1,3 @@
+# This directory is the endpoint for the generated parser DLL
+lib/*.dll
+lib/*.pdb
