@@ -16,11 +16,13 @@ jarbuild:
 	echo ========== Building ANTLR JAR
 	cd antlr/jar; gradle build; cd ../..
 	cp antlr/jar/build/libs/lolcodeparser.jar kotlin/engine/libs
+	cp antlr/jar/build/libs/lolcodeparser.jar java/engine/lib
 
 clrbuild:
 	echo ========== Building ANTLR CLR
 	cd antlr/clr; dotnet build; cd ../..
 	cp antlr/clr/bin/Debug/net6.0/LOLCODEParser.dll csharp/lib
+	cp antlr/clr/bin/Debug/net6.0/LOLCODEParser.dll fsharp/lib
 
 # ========== Test everything
 #
@@ -71,7 +73,15 @@ javatest: javabuild
 
 # ========== F# Interpreter
 #
-fsharp:
+fsharp: fsharpbuild fsharptest
+
+fsharpbuild: clrbuild
+	echo ========== Building FSharp Engine....
+	cd fsharp; dotnet build; cd ..
+
+fsharptest: fsharpbuild
+	echo ========== Testing FSharp Engine....
+	cd fsharp; dotnet test; cd ..
 
 # ========== C++ Interpreter
 #
