@@ -108,6 +108,10 @@ class Interpreter {
                     else -> throw Exception("Implementation error: Unrecognized operator: ${expr.op}")
                 })
             }
+            is UnaryOp -> {
+                val result = evaluate(expr.expression)
+                return result.not()
+            }
             is Logical -> {
                 return when (expr.op) {
                     Logical.Operator.ALL -> {
@@ -164,7 +168,6 @@ class Interpreter {
                 var message = stmt.expressions.joinToString(prefix="", postfix="", separator="") { 
                     evaluate(it).asString()
                 }
-                println("DEBUG: " + message)
                 ioOut.println(message)
             }
             is Input -> {

@@ -80,7 +80,7 @@ Should be pretty quick, aside from the fact that we're setting up bare-bones inf
 
 * Parser/g4: Add declarations
 * AST: Declaration, Atom, Label; ASTVisitor
-* Interpreter: Variant, Declaration branch (which holds map-of-String-to-Variants for scope)
+* Interpreter: Variant; Declaration branch (which holds map-of-String-to-Variants for scope)
 
 Variant should probably be a predefined class, because that thing is way bigger than I thought it would be when I first started. Whoof. WAY bigger. Maths, comparisons, the whole shooting match.
 
@@ -115,6 +115,10 @@ Variant should probably be a predefined class, because that thing is way bigger 
 * Interpreter: `evaluate` Comparison
 
 ## Step 7: Logical operations
+
+* Parser/g4: logical, unary_op
+* AST: Logical, UnaryOp; ASTVisitor
+* Interpreter: `evaluate` Logical, UnaryOp
 
 ## Step 8: Branching
 

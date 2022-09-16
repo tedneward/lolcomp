@@ -171,4 +171,14 @@ class Variant(v : Any? = null) {
         // Fine, string-lexical ordinal comparison
         return this.asString().compareTo(other.asString()) < 0
     }
+    public fun not() : Variant {
+        if (isTroof())
+            return Variant(! this.asBoolean())
+        else if (isNumbar())
+            return Variant(- this.asDouble())
+        else if (isNumbr())
+            return Variant(- this.asInt64())
+        else
+            return Variant("NOT " + this.asString())
+    }
 }

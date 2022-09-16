@@ -101,7 +101,7 @@ class ScriptTests {
     }
     @Test fun logicalsExample() {
         val (_, outBuffer) = executeExampleFile("logicals.lol")
-        assertEquals("WIN? WIN\nWIN? WIN\nFAIL? FAIL\n",
+        assertEquals("WIN? WIN\nWIN? WIN\nFAIL? FAIL\nFAIL? FAIL\nWIN? WIN\n",
             outBuffer.toString())
     }
 }

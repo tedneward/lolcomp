@@ -137,4 +137,28 @@ class RuntimeTests {
         assertTrue(threeSD.lesserThan(fiveD))
         assertTrue(fiveSD.greaterThan(threeD))
     }
+
+    @Test fun notTests() {
+        val boolVar = Variant(true)
+        assertTrue(boolVar.asBoolean())
+        val notBoolVar = boolVar.not()
+        assertFalse(notBoolVar.asBoolean())
+        val notNotBoolVar = notBoolVar.not()
+        assertTrue(notNotBoolVar.asBoolean())
+
+        val intVar = Variant(12)
+        assertEquals(12, intVar.asInt64())
+        assertEquals(-12, intVar.not().asInt64())
+        assertEquals(12, intVar.not().not().asInt64())
+
+        val dVar = Variant(12.0)
+        assertEquals(12.0, dVar.asDouble())
+        assertEquals(-12.0, dVar.not().asDouble())
+        assertEquals(12.0, dVar.not().not().asDouble())
+
+        val strVar = Variant("WIZZYRD")
+        assertEquals("WIZZYRD", strVar.asString())
+        assertEquals("NOT WIZZYRD", strVar.not().asString())
+        assertEquals("NOT NOT WIZZYRD", strVar.not().not().asString())
+    }
 }

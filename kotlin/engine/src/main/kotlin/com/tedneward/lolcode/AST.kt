@@ -88,11 +88,11 @@ class Logical(val op : Operator, val expressions : List<Expression>) : Expressio
     }
 }
 
-class UnaryOp(val op : Operator, val expr : Expression) : Expression() {
+class UnaryOp(val op : Operator, val expression : Expression) : Expression() {
     enum class Operator { NEG }
 
     override fun toString() : String {
-        return "(unary_op ${op} ${expr})"
+        return "(unary_op ${op} ${expression})"
     }
 }
 
@@ -150,6 +150,8 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
             this.visit(ctx.comparison())
         else if (ctx.logical() != null)
             this.visit(ctx.logical())
+        else if (ctx.unary_op() != null)
+            this.visit(ctx.unary_op())
         //else if (ctx.func_call() != null)
         //    this.visit(ctx.func_call())
         else
@@ -214,7 +216,6 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
     }
 
     override fun visitLogical(ctx: lolcodeParser.LogicalContext) : Node {
-        println("Visiting logical: ${ctx.op.text}")
         return when (ctx.op.text) {
             "ALL OF" -> {
                 val exprs : MutableList<Expression> = mutableListOf()
@@ -243,6 +244,15 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
             else ->
                 throw Exception("Unrecognized operator: ${ctx.op.text}")
         }
+    }
+
+    override fun visitUnary_op(ctx: lolcodeParser.Unary_opContext) : Node {
+        // If we ever get a second unary operator, we'll need to make this
+        // look like the binary operator code (when ctx.op.text....)
+        // but for now, if it's a unary op, it's a NOT
+
+        val expr = visit(ctx.expression()) as Expression
+        return UnaryOp(UnaryOp.Operator.NEG, expr)
     }
 }
 
