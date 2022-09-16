@@ -35,7 +35,7 @@ The `lolcode.g4` grammar comes from the ANTLR project-of-grammars, but I've had 
 Test with `dotnet test -l "console;verbosity=detailed"`.
 
 ## Kotlin -- JVM
-Test with `gradle test`.
+Test with `gradle test`; view `./kotlin/engine/build/reports/tests/test/packages/com.tedneward.lolcode.html` for test results.
 
 ## F# (fsharp) -- CLR
 Test with `dotnet test -l "console;verbosity=detailed"`.
