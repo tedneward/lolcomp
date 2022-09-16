@@ -108,6 +108,48 @@ class Interpreter {
                     else -> throw Exception("Implementation error: Unrecognized operator: ${expr.op}")
                 })
             }
+            is Logical -> {
+                return when (expr.op) {
+                    Logical.Operator.ALL -> {
+                        for (e in expr.expressions) {
+                            val result = evaluate(e)
+                            if (result.asBoolean() == false) {
+                                return Variant(false)
+                            }
+                        }
+                        return Variant(true)
+                    }
+                    Logical.Operator.ANY -> {
+                        for (e in expr.expressions) {
+                            val result = evaluate(e)
+                            if (result.asBoolean() == true) {
+                                return Variant(true)
+                            }
+                        }
+                        return Variant(false)
+                    }
+                    Logical.Operator.AND ->{
+                        for (e in expr.expressions) {
+                            val result = evaluate(e)
+                            if (result.asBoolean() == false) {
+                                return Variant(false)
+                            }
+                        }
+                        return Variant(true)
+                    }
+                    Logical.Operator.OR -> {
+                        for (e in expr.expressions) {
+                            val result = evaluate(e)
+                            if (result.asBoolean() == true) {
+                                return Variant(true)
+                            }
+                        }
+                        return Variant(false)
+                    }
+                    else ->
+                        throw Exception("Implementation error: Unrecognized logical: ${expr}")
+                }
+            }
             else ->
                 throw Exception("Unrecognized expression: ${expr}")
         }
@@ -122,6 +164,7 @@ class Interpreter {
                 var message = stmt.expressions.joinToString(prefix="", postfix="", separator="") { 
                     evaluate(it).asString()
                 }
+                println("DEBUG: " + message)
                 ioOut.println(message)
             }
             is Input -> {

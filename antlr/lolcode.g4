@@ -86,10 +86,11 @@ import
 expression
    : maths
    | comparison
+   | logical
+   | unary_op
    | atom=ATOM
    | label=LABEL
    /*
-   | logicals
    | func_call
    */
    ;
@@ -103,24 +104,20 @@ comparison
    : op=('BOTH SAEM'|'DIFFRINT'|'BIGGR OF'|'SMALLR OF') left=expression 'AN' right=expression
    ;
 
-/*
-logicals
-   : op=('ALL OF'|'ANY OF') ('AN' expression)* 'MKAY?'
+logical
+   : op=('ALL OF'|'ANY OF') expression ('AN' expression)* 'MKAY?'
    | op=('BOTH OF'|'EITHER OF') left=expression 'AN' right=expression
-   | 'NOT' expression
    ;
- */
 
+unary_op
+   : 'NOT' expression
+   ;
 
 /*
 func_call
    : LABEL expression+ 'MKAY?'
    ;
  */   
-
-LABEL
-   : ('a' .. 'z' | 'A' .. 'Z') ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_')*
-   ;
 
 ATOM
    : 'WIN'
@@ -131,6 +128,10 @@ ATOM
    | '-' ('0' .. '9')+
    | '-' ('0' .. '9')* '.' ('0' .. '9')*
    | STRING
+   ;
+
+LABEL
+   : ('a' .. 'z' | 'A' .. 'Z') ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_')*
    ;
 
 STRING

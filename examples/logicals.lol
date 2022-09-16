@@ -1,0 +1,14 @@
+OBTW This sample tests the "logicals" operators. TLDR
+
+HAI 1.2
+
+I HAS A result1 ITZ ALL OF WIN AN WIN MKAY?
+VISIBLE "WIN? " result1 MKAY?
+
+I HAS A result2 ITZ ANY OF WIN AN FAIL MKAY?
+VISIBLE "WIN? " result2 MKAY?
+
+I HAS A result3 ITZ ALL OF WIN AN WIN AN WIN AN WIN AN FAIL MKAY?
+VISIBLE "FAIL? " result3 MKAY?
+
+KTHXBYE

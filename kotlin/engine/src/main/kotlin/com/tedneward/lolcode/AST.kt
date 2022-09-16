@@ -13,8 +13,7 @@ import com.tedneward.lolcode.parser.*
 // Abstract Syntax Tree
 open class Node() { }
 
-class CodeBlock() : Node() {
-    val statements: MutableList<Statement> = mutableListOf()
+class CodeBlock(val statements: List<Statement> = mutableListOf()) : Node() {
     override fun toString() : String {
         return "(codeBlock statements:${statements.map { it.toString() }})"
     }
@@ -34,8 +33,7 @@ class Declaration(var name : String, var expr : Expression) : Statement() {
     }
 }
 
-class Print() : Statement() {
-    val expressions: MutableList<Expression> = mutableListOf()
+class Print(val expressions : List<Expression>) : Statement() {
     override fun toString() : String {
         return "(print ${expressions.map { it.toString() }})"
     }
@@ -82,6 +80,22 @@ class Comparison(val left : Expression, val op : Operator, val right : Expressio
     }
 }
 
+class Logical(val op : Operator, val expressions : List<Expression>) : Expression() {
+    enum class Operator { ALL, ANY, AND, OR }
+
+    override fun toString() : String {
+        return "(logical ${op} ${expressions.map { it.toString() }})"
+    }
+}
+
+class UnaryOp(val op : Operator, val expr : Expression) : Expression() {
+    enum class Operator { NEG }
+
+    override fun toString() : String {
+        return "(unary_op ${op} ${expr})"
+    }
+}
+
 // ====================================
 // Visitor: ANTLR parser transformed into Abstract Syntax Tree
 //
@@ -114,12 +128,11 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
     }
 
 	override fun visitCode_block(ctx: lolcodeParser.Code_blockContext) : Node {
-        val cb = CodeBlock()
+        val stmts : MutableList<Statement> = mutableListOf()
         for (stmt in ctx.statement()) {
-            val node = visit(stmt)
-            cb.statements.add(node as Statement)
+            stmts.add(visit(stmt) as Statement)
         }
-        return cb
+        return CodeBlock(stmts)
     }
 
 	override fun visitDeclaration(ctx: lolcodeParser.DeclarationContext) : Node {
@@ -135,19 +148,21 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
             this.visit(ctx.maths())
         else if (ctx.comparison() != null)
             this.visit(ctx.comparison())
+        else if (ctx.logical() != null)
+            this.visit(ctx.logical())
+        //else if (ctx.func_call() != null)
+        //    this.visit(ctx.func_call())
         else
             throw Exception("Somehow expression ${ctx} didn't generate a node")
     }
 
 	override fun visitPrint_block(ctx: lolcodeParser.Print_blockContext) : Node {
-        var prnt = Print()
-
+        var exprs : MutableList<Expression> = mutableListOf()
         for (expr in ctx.expression()) {
-            val node = visit(expr)
-            prnt.expressions.add(node as Expression)
+            exprs.add(visit(expr) as Expression)
         }
 
-        return prnt
+        return Print(exprs)
     }
 
 	override fun visitInput_block(ctx: lolcodeParser.Input_blockContext) : Node {
@@ -196,6 +211,38 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
             this.visit(ctx.left) as Expression, 
             op,
             this.visit(ctx.right) as Expression)
+    }
+
+    override fun visitLogical(ctx: lolcodeParser.LogicalContext) : Node {
+        println("Visiting logical: ${ctx.op.text}")
+        return when (ctx.op.text) {
+            "ALL OF" -> {
+                val exprs : MutableList<Expression> = mutableListOf()
+                for (expr in ctx.expression()) {
+                    exprs.add(visit(expr) as Expression)
+                }
+                return Logical(Logical.Operator.ALL, exprs)
+            }
+            "ANY OF" -> {
+                val exprs : MutableList<Expression> = mutableListOf()
+                for (expr in ctx.expression()) {
+                    exprs.add(visit(expr) as Expression)
+                }
+                return Logical(Logical.Operator.ANY, exprs)
+            }
+            "BOTH OF" -> 
+                Logical(Logical.Operator.AND, 
+                    listOf(this.visit(ctx.left) as Expression, 
+                           this.visit(ctx.right) as Expression)
+                )
+            "EITHER OF" -> 
+                Logical(Logical.Operator.OR, 
+                    listOf(this.visit(ctx.left) as Expression, 
+                           this.visit(ctx.right) as Expression)
+                )
+            else ->
+                throw Exception("Unrecognized operator: ${ctx.op.text}")
+        }
     }
 }
 

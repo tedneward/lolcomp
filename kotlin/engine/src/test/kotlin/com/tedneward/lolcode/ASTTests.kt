@@ -16,12 +16,15 @@ class ASTTests {
 
         var program = Program("1.2")
 
-        program.codeBlock.statements.add(Declaration("age", Atom("27")))
+        program.codeBlock = CodeBlock(mutableListOf(
+            Declaration("age", Atom("27"))
+        ))
 
-        var print = Print()
-        print.expressions.add(Atom("Ur age is "))
-        print.expressions.add(Label("age"))
-        program.codeBlock.statements.add(print)
+        var print = Print(listOf(
+            Atom("Ur age is "),
+            Label("age")
+        ))
+        (program.codeBlock.statements as MutableList<Statement>).add(print)
 
         interp.run(program.codeBlock)
 
