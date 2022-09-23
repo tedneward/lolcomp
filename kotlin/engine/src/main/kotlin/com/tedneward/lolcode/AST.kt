@@ -57,6 +57,15 @@ class Loop(val label : String, val conditional : Expression, val codeBlock : Cod
     }
 }
 
+// if / if-else
+// if-elseif-else ==> Conditional(elseBlock=CodeBlock(Conditional(elseBlock=block)))
+class Conditional(val conditional : Expression, val codeBlock : CodeBlock) : Statement() {
+    var elseBlock : CodeBlock? = null
+    override fun toString() : String {
+        return "(if condition:${conditional} ${codeBlock})"
+    }
+}
+
 open class Expression : Statement() { }
 
 class Atom(val value : String) : Expression() {
@@ -154,6 +163,12 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
         val conditional = visitExpression(ctx.expression()) as Expression
         val codeBlock = visitCode_block(ctx.code_block()) as CodeBlock
         return Loop(label, conditional, codeBlock)
+    }
+
+    override fun visitIf_block(ctx: lolcodeParser.If_blockContext) : Node {
+        val conditional = visitExpression(ctx.expression()) as Expression
+        val codeBlock = visitCode_block(ctx.code_block()) as CodeBlock
+        return Conditional(conditional, codeBlock)
     }
 
     override fun visitExpression(ctx: lolcodeParser.ExpressionContext) : Node {

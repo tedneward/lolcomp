@@ -85,6 +85,14 @@ class Interpreter {
                     evaluate(stmt.codeBlock)
                 }
             }
+            is Conditional -> {
+                if (evaluate(stmt.conditional).asBoolean()) {
+                    evaluate(stmt.codeBlock)
+                }
+                else if (stmt.elseBlock != null) {
+                    evaluate(stmt.elseBlock as CodeBlock)
+                }
+            }
         }
     }
 

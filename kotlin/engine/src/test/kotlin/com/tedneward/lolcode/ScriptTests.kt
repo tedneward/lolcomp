@@ -8,20 +8,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ScriptTests {
-    @Test fun simpleProgramTest() {
-        val code = """
-        HAI 1.2
-        KTHXBYE
-        """
-
-        val interp = Interpreter()
-        interp.execute(code)
-
-        assertEquals(interp.program.version, "1.2")
-    }
-
-    fun executeExampleFile(filename : String, input : String = "") : Pair<Interpreter, String> {
-        val code = File("../../examples/${filename}").readText()
+    fun executeExampleFile(testname : String) : Interpreter {
+        val code = File("../../examples/${testname}.lol").readText()
+        val input = if (File("../../examples/${testname}.in").isFile)
+                File("../../examples/${testname}.in").readText()
+            else
+                ""
+        val output = if (File("../../examples/${testname}.out").isFile)
+                File("../../examples/${testname}.out").readText()
+            else
+                ""
 
         val interp = Interpreter()
         val outBuffer = java.io.ByteArrayOutputStream()
@@ -29,22 +25,23 @@ class ScriptTests {
         interp.ioIn = input.byteInputStream()
 
         interp.execute(code)
+        assertEquals(output, outBuffer.toString())
 
-        return Pair(interp, outBuffer.toString())
+        return interp
     }
 
     @Test fun haiExample() {
-        val (interp, _) = executeExampleFile("hai.lol")
+        val interp = executeExampleFile("hai")
 
         assertEquals(interp.program.version, "1.2")
     }
     @Test fun hai12Example() {
-        val (interp, _) = executeExampleFile("hai12.lol")
+        val interp = executeExampleFile("hai12")
 
         assertEquals(interp.program.version, "1.2")
     }
     @Test fun justvarExample() {
-        val (interp, _) = executeExampleFile("justvar.lol")
+        val interp = executeExampleFile("justvar")
 
         assertEquals(interp.program.version, "1.2")
         assertEquals(interp.program.codeBlock.statements.size, 1)
@@ -54,7 +51,7 @@ class ScriptTests {
         assertEquals((decl.expr as Atom).value, "0")
     }
     @Test fun varExample() {
-        val (interp, outBuffer) = executeExampleFile("var.lol")
+        val interp = executeExampleFile("var")
 
         assertEquals(interp.program.codeBlock.statements.size, 2)
 
@@ -64,49 +61,14 @@ class ScriptTests {
         assertEquals((decl.expr as Atom).value, "0")
 
         assertTrue(interp.program.codeBlock.statements.get(1) is Print)
+    }
 
-        assertEquals("The var is 0\n", outBuffer.toString())
-    }
-    @Test fun helloExample() {
-        val (_, outBuffer) = executeExampleFile("hello.lol")
-        assertEquals("Hello world\n", outBuffer.toString())
-    }
-    @Test fun inputageExample() {
-        val (_, outBuffer) = executeExampleFile("inputage.lol", "27\n")
-        assertEquals("What is your age?\nYour age is 27\n", outBuffer.toString())
-    }
-    @Test fun assignExample() {
-        val (_, outBuffer) = executeExampleFile("assign.lol", "27\n")
-        assertEquals(
-            "What is your age?\n" + 
-            "Your age is 27\n" +
-            "Your age is now 50\n" +
-            "UR OLD!\n",
-            outBuffer.toString())
-    }
-    @Test fun mathsExample() {
-        val (_, outBuffer) = executeExampleFile("maths.lol")
-        assertEquals("4\n0\n100\n5\n0\n",
-            outBuffer.toString())
-    }
-    //@Test fun moremathsExample() {
-    //    val (_, outBuffer) = executeExampleFile("moremaths.lol")
-    //    assertEquals("4\n0\n100\n5\n0\n",
-    //        outBuffer.toString())
-    //}
-    @Test fun comparisonsExample() {
-        val (_, outBuffer) = executeExampleFile("comparisons.lol")
-        assertEquals("FAIL\nWIN\nFAIL\nWIN\n",
-            outBuffer.toString())
-    }
-    @Test fun logicalsExample() {
-        val (_, outBuffer) = executeExampleFile("logicals.lol")
-        assertEquals("WIN? WIN\nWIN? WIN\nFAIL? FAIL\nFAIL? FAIL\nWIN? WIN\n",
-            outBuffer.toString())
-    }
-    @Test fun loopingExample() {
-        val (_, outBuffer) = executeExampleFile("looping.lol")
-        assertEquals("counter=5\ncounter=4\ncounter=3\ncounter=2\ncounter=1\n",
-            outBuffer.toString())
-    }
+    @Test fun helloExample() { executeExampleFile("hello") }
+    @Test fun inputageExample() { executeExampleFile("inputage") }
+    @Test fun assignExample() { executeExampleFile("assign") }
+    @Test fun mathsExample() { executeExampleFile("maths") }
+    @Test fun comparisonsExample() { executeExampleFile("comparisons") }
+    @Test fun logicalsExample() { executeExampleFile("logicals") }
+    @Test fun loopingExample() { executeExampleFile("looping") }
+    @Test fun ifExample() { executeExampleFile("if") }
 }
