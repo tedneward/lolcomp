@@ -154,7 +154,7 @@ class Interpreter {
                 val result = evaluate(expr.expression)
                 return result.not()
             }
-            is Logical -> {
+            is Logical ->
                 when (expr.op) {
                     Logical.Operator.ALL -> {
                         for (e in expr.expressions) {
@@ -195,7 +195,6 @@ class Interpreter {
                     else ->
                         throw Exception("Implementation error: Unrecognized logical: ${expr}")
                 }
-            }
             else ->
                 throw Exception("Unrecognized expression: ${expr}")
         }
