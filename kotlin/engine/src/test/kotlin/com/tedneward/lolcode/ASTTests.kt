@@ -26,7 +26,7 @@ class ASTTests {
         ))
         (program.codeBlock.statements as MutableList<Statement>).add(print)
 
-        interp.run(program.codeBlock)
+        interp.evaluate(program.codeBlock)
 
         assertEquals("Ur age is 27\n", outBuffer.toString())
     }

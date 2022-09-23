@@ -48,13 +48,43 @@ class Interpreter {
 
     fun run(program : Program) {
         this.program = program
-        run(this.program.codeBlock)
+        evaluate(this.program.codeBlock)
     }
-    fun run(codeBlock : CodeBlock) {
+
+    fun evaluate(codeBlock : CodeBlock) {
         pushScope()
 
         for (stmt in codeBlock.statements) {
             evaluate(stmt)
+        }
+    }
+
+    fun evaluate(stmt : Statement) {
+        when (stmt) {
+            is Declaration -> {
+                store(stmt.name, evaluate(stmt.expr))
+            }
+            is Print -> {
+                var message = stmt.expressions.joinToString(prefix="", postfix="", separator="") { 
+                    evaluate(it).asString()
+                }
+                ioOut.println(message)
+            }
+            is Input -> {
+                var input = ioIn.bufferedReader().readLine()
+                store(stmt.label, Variant(input))
+            }
+            is Assignment -> {
+                store(stmt.label, evaluate(stmt.expr))
+            }
+            is Expression -> {
+                evaluate(stmt)
+            }
+            is Loop -> {
+                while (evaluate(stmt.conditional).asBoolean()) {
+                    evaluate(stmt.codeBlock)
+                }
+            }
         }
     }
 
@@ -113,7 +143,7 @@ class Interpreter {
                 return result.not()
             }
             is Logical -> {
-                return when (expr.op) {
+                when (expr.op) {
                     Logical.Operator.ALL -> {
                         for (e in expr.expressions) {
                             val result = evaluate(e)
@@ -156,30 +186,6 @@ class Interpreter {
             }
             else ->
                 throw Exception("Unrecognized expression: ${expr}")
-        }
-    }
-
-    fun evaluate(stmt : Statement) {
-        when (stmt) {
-            is Declaration -> {
-                store(stmt.name, evaluate(stmt.expr))
-            }
-            is Print -> {
-                var message = stmt.expressions.joinToString(prefix="", postfix="", separator="") { 
-                    evaluate(it).asString()
-                }
-                ioOut.println(message)
-            }
-            is Input -> {
-                var input = ioIn.bufferedReader().readLine()
-                store(stmt.label, Variant(input))
-            }
-            is Assignment -> {
-                store(stmt.label, evaluate(stmt.expr))
-            }
-            is Expression -> {
-                evaluate(stmt)
-            }
         }
     }
 }

@@ -104,4 +104,9 @@ class ScriptTests {
         assertEquals("WIN? WIN\nWIN? WIN\nFAIL? FAIL\nFAIL? FAIL\nWIN? WIN\n",
             outBuffer.toString())
     }
+    @Test fun loopingExample() {
+        val (_, outBuffer) = executeExampleFile("looping.lol")
+        assertEquals("counter=5\ncounter=4\ncounter=3\ncounter=2\ncounter=1\n",
+            outBuffer.toString())
+    }
 }

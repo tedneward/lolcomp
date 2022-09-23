@@ -28,12 +28,12 @@ statement
    | print_block
    | input_block
    | assignment
-   /*
    | if_block
    | loop
-   | import
    | func_decl
-   */
+   /*
+   | import
+    */
    ;
 
 comment
@@ -58,7 +58,6 @@ assignment
    : LABEL 'R' expression
    ;
 
-/*
 loop
    : 'IM IN YR' LABEL 'WILE' expression code_block 'IM OUTTA YR' LABEL
    ;
@@ -70,14 +69,15 @@ if_block
 
 else_if_block
    : 'MEBBE' expression code_block else_if_block
-   | 'NO WAI' code_block
    | 'MEBBE' expression code_block
+   | 'NO WAI' code_block
    ;
 
 func_decl
-   : 'HOW DUZ I' LABEL (('YR' LABEL) ('AN YR' LABEL)*)? code_block 'IF U SAY SO'
+   : 'HOW DUZ I' name=LABEL (('YR' LABEL) ('AN YR' LABEL)*)? code_block 'IF U SAY SO'
    ;
 
+/*
 import
    : 'CAN HAS' LABEL '?'
    ;

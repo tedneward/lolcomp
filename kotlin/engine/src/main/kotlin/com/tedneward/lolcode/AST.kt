@@ -51,6 +51,12 @@ class Assignment(val label : String, val expr : Expression) : Statement() {
     }
 }
 
+class Loop(val label : String, val conditional : Expression, val codeBlock : CodeBlock) : Statement() {
+    override fun toString() : String {
+        return "(loop ${label} condition:${conditional} ${codeBlock})"
+    }
+}
+
 open class Expression : Statement() { }
 
 class Atom(val value : String) : Expression() {
@@ -137,6 +143,17 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
 
 	override fun visitDeclaration(ctx: lolcodeParser.DeclarationContext) : Node {
         return Declaration(ctx.LABEL().text, this.visit(ctx.expression()) as Expression)
+    }
+
+    override fun visitLoop(ctx: lolcodeParser.LoopContext) : Node {
+        // Labels at top and bottom need to match
+        if (ctx.LABEL(0).text != ctx.LABEL(1).text)
+            throw Exception("YR LOOP IZ CONFUZED: ${ctx.LABEL(0).text} AN ${ctx.LABEL(1).text}")
+
+        val label = ctx.LABEL(0).text
+        val conditional = visitExpression(ctx.expression()) as Expression
+        val codeBlock = visitCode_block(ctx.code_block()) as CodeBlock
+        return Loop(label, conditional, codeBlock)
     }
 
     override fun visitExpression(ctx: lolcodeParser.ExpressionContext) : Node {
