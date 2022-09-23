@@ -86,10 +86,13 @@ class Interpreter {
                 }
             }
             is Conditional -> {
+                print("Evaluating if: ${stmt.conditional}: ")
                 if (evaluate(stmt.conditional).asBoolean()) {
+                    println("TRUE")
                     evaluate(stmt.codeBlock)
                 }
                 else if (stmt.elseBlock != null) {
+                    println("FALSE")
                     evaluate(stmt.elseBlock as CodeBlock)
                 }
             }
@@ -98,6 +101,7 @@ class Interpreter {
 
     fun evaluate(expr : Expression) : Variant {
         return when (expr) {
+            Atom.NOOB -> Variant()
             is Atom -> Variant(expr.value)
             is Label -> lookup(expr.name)
             is BinaryOp -> {

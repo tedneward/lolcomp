@@ -70,5 +70,6 @@ class ScriptTests {
     @Test fun comparisonsExample() { executeExampleFile("comparisons") }
     @Test fun logicalsExample() { executeExampleFile("logicals") }
     @Test fun loopingExample() { executeExampleFile("looping") }
-    @Test fun ifExample() { executeExampleFile("if") }
+    //@Test fun ifExample() { executeExampleFile("if") }
+    @Test fun ifElseExample() { executeExampleFile("ifelse") }
 }

@@ -47,17 +47,18 @@ class RuntimeTests {
         try { v.asDouble(); assertTrue(false, "Should never get here")  }
         catch (ex : Exception) { assertEquals("CANT CONVER NOOB", ex.message) }
 
-        try { v.asBoolean(); assertTrue(false, "Should never get here")  }
-        catch (ex : Exception) { assertEquals("CANT CONVER NOOB", ex.message) }
+        try { assertFalse(v.asBoolean())  }
+        catch (ex : Exception) { assertTrue(false, "We should be able to convert NOOB to false") }
     }
     @Test fun strings() {
         val v1 = Variant("This is a test")
         assertEquals("This is a test", v1.asString())
     }
     @Test fun testBooleanConversions() {
-        assertEquals(true, Variant(1).asBoolean())
-        assertEquals(false, Variant(0).asBoolean())
-        assertEquals(true, Variant(-1).asBoolean())
+        assertTrue(Variant(1).asBoolean())
+        assertFalse(Variant(0).asBoolean())
+        assertTrue(Variant(-1).asBoolean())
+        assertFalse(Variant(null).asBoolean())
     }
     @Test fun mathsConversionRules() { 
         val fiveString = Variant("5")

@@ -19,7 +19,7 @@ class Variant(v : Any? = null) {
         // NULL
         NOOB {
             override fun toString(value : Any) : String { return "[NOOB]" }
-            override fun asBoolean(value : Any) : Boolean { throw Exception("CANT CONVER NOOB") }
+            override fun asBoolean(value : Any) : Boolean { return false }
             override fun asInt64(value : Any) : Long { throw Exception("CANT CONVER NOOB") }
             override fun asDouble(value : Any) : Double { throw Exception("CANT CONVER NOOB") }
             override fun asString(value : Any) : String { throw Exception("CANT CONVER NOOB") }

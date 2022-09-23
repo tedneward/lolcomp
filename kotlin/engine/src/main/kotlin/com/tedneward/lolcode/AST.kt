@@ -27,7 +27,7 @@ class Program(var version: String = "", var codeBlock: CodeBlock = CodeBlock()) 
 
 open class Statement : Node() { }
 
-class Declaration(var name : String, var expr : Expression) : Statement() { 
+class Declaration(val name : String, val expr : Expression) : Statement() { 
     override fun toString() : String {
         return "(decl ${name} ${expr})"
     }
@@ -72,6 +72,7 @@ class Atom(val value : String) : Expression() {
     override fun toString() : String {
         return "(ATOM '${value}')"
     }
+    companion object { val NOOB = Atom("[NOOB]") }
 }
 class Label(val name : String) : Expression() { 
     override fun toString() : String {
@@ -151,7 +152,12 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
     }
 
 	override fun visitDeclaration(ctx: lolcodeParser.DeclarationContext) : Node {
-        return Declaration(ctx.LABEL().text, this.visit(ctx.expression()) as Expression)
+        return Declaration(ctx.LABEL().text, 
+            if (ctx.expression() != null)
+                this.visit(ctx.expression()) as Expression 
+            else 
+                Atom.NOOB
+        )
     }
 
     override fun visitLoop(ctx: lolcodeParser.LoopContext) : Node {
@@ -167,8 +173,14 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
 
     override fun visitIf_block(ctx: lolcodeParser.If_blockContext) : Node {
         val conditional = visitExpression(ctx.expression()) as Expression
-        val codeBlock = visitCode_block(ctx.code_block()) as CodeBlock
-        return Conditional(conditional, codeBlock)
+        val codeBlock = visitCode_block(ctx.code_block(0)) as CodeBlock
+
+        val node = Conditional(conditional, codeBlock)
+        if (ctx.elseBlock != null) {
+            node.elseBlock = visitCode_block(ctx.elseBlock) as CodeBlock
+        }
+
+        return node
     }
 
     override fun visitExpression(ctx: lolcodeParser.ExpressionContext) : Node {
