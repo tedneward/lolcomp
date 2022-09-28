@@ -15,7 +15,7 @@ antlrtest: antlrbuild
 jarbuild:
 	echo ========== Building ANTLR JAR
 	cd antlr/jar; gradle build; cd ../..
-	cp antlr/jar/build/libs/lolcodeparser.jar kotlin/engine/libs
+	cp antlr/jar/build/libs/lolcodeparser.jar kotlin/engine/lib
 	cp antlr/jar/build/libs/lolcodeparser.jar java/engine/lib
 
 clrbuild:
