@@ -9,4 +9,4 @@ bin
 
 # Ignore local-JAR directory (which is where we put
 # ANTLR-generated JAR file)
-engine/libs/lolcodeparser.jar
+engine/lib/lolcodeparser.jar
