@@ -8,4 +8,4 @@
  */
 
 rootProject.name = "LOLcomp"
-include("lib")
+include("engine")

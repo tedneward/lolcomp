@@ -10,7 +10,10 @@ repositories {
 }
 
 dependencies {
-    antlr "org.antlr:antlr4:4.7.1"
+    // Local dependencies (aka our ANTLR-generated code)
+    implementation fileTree(dir: 'lib', include: '*.jar')
+
+    antlr "org.antlr:antlr4:4.10.1"
     
     // Use JUnit Jupiter for testing.
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
