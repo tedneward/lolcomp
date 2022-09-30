@@ -32,10 +32,14 @@ test: kotlintest csharptest javatest
 #
 clean:
 	cd antlr; ./clean.sh; cd ..
-	rm kotlin/engine/libs/lolcodeparser.jar
+	rm kotlin/engine/lib/lolcodeparser.jar
 	cd kotlin; gradle clean; cd ..
 	rm csharp/lib/LOLCODEParser.dll
 	cd csharp; dotnet clean; cd ..
+	rm java/engine/lib/lolcodeparser.jar
+	cd java; gradle clean; cd ..
+	rm fsharp/lib/LOLCODEParser.dll
+	cd fsharp; dotnet clean; cd ..
 
 # ========== Kotlin Interpreter
 #

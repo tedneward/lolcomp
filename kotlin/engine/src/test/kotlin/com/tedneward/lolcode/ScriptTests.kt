@@ -63,13 +63,16 @@ class ScriptTests {
         assertTrue(interp.program.codeBlock.statements.get(1) is Print)
     }
 
-    @Test fun helloExample() { executeExampleFile("hello") }
-    @Test fun inputageExample() { executeExampleFile("inputage") }
     @Test fun assignExample() { executeExampleFile("assign") }
-    @Test fun mathsExample() { executeExampleFile("maths") }
+    @Test fun commentExample() { executeExampleFile("comment") }
     @Test fun comparisonsExample() { executeExampleFile("comparisons") }
+    @Test fun helloExample() { executeExampleFile("hello") }
+    @Test fun ifExample() { executeExampleFile("if") }
+    @Test fun ifElseExample() { executeExampleFile("ifelse") }
+    @Test fun inputageExample() { executeExampleFile("inputage") }
     @Test fun logicalsExample() { executeExampleFile("logicals") }
     @Test fun loopingExample() { executeExampleFile("looping") }
-    //@Test fun ifExample() { executeExampleFile("if") }
-    @Test fun ifElseExample() { executeExampleFile("ifelse") }
+    @Test fun mathsExample() { executeExampleFile("maths") }
+    @Test fun moremathsExample() { executeExampleFile("moremaths") }
+    @Test fun negnumbrsExample() { executeExampleFile("negnumbrs") }
 }

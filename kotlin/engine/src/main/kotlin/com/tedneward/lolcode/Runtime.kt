@@ -28,14 +28,14 @@ class Variant(v : Any? = null) {
         TROOF {
             override fun toString(value : Any) : String { return "[${value} (TROOF)]" }
             override fun asBoolean(value : Any) : Boolean { return if (value as Boolean) true else false }
-            override fun asInt64(value : Any) : Long { return if (value as Boolean) 1 else 0 }
+            override fun asInt64(value : Any) : Long { return if (value as Boolean) 1L else 0L }
             override fun asDouble(value : Any) : Double { return if (value as Boolean) 1.0 else 0.0 }
             override fun asString(value : Any) : String { return if (value as Boolean) "WIN" else "FAIL" }
         },
         // Int64
         NUMBR {
             override fun toString(value : Any) : String { return "[${value } (NUMBR)]" }
-            override fun asBoolean(value : Any) : Boolean { return if (value == 0) false else true }
+            override fun asBoolean(value : Any) : Boolean { return (value.toString().toLong() != 0L) }
             override fun asInt64(value : Any) : Long { return value.toString().toLong() }
             override fun asDouble(value : Any) : Double { return value.toString().toDouble() }
             override fun asString(value : Any) : String { return value.toString() }
@@ -74,9 +74,9 @@ class Variant(v : Any? = null) {
         val (ty,va) = when (v) {
             null -> Pair(TYPE.NOOB, "")
             is Boolean -> Pair(TYPE.TROOF, v.toString().toBoolean())
-            is Int -> Pair(TYPE.NUMBR, v)
+            is Int -> Pair(TYPE.NUMBR, v.toLong())
             is Long -> Pair(TYPE.NUMBR, v)
-            is Float -> Pair(TYPE.NUMBAR, v)
+            is Float -> Pair(TYPE.NUMBAR, v.toDouble())
             is Double -> Pair(TYPE.NUMBAR, v)
             is String -> {
                 if (Variant.isLong(v))

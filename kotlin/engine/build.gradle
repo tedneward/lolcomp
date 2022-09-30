@@ -12,7 +12,7 @@ repositories {
 
 dependencies {
     // Local dependencies (aka our ANTLR-generated code)
-    implementation fileTree(dir: 'libs', include: '*.jar')
+    implementation fileTree(dir: 'lib', include: '*.jar')
 
     // ANTLR itself
     implementation "org.antlr:antlr4:4.10.1"

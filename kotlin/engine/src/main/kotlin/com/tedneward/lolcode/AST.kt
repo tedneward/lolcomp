@@ -62,7 +62,13 @@ class Loop(val label : String, val conditional : Expression, val codeBlock : Cod
 class Conditional(val conditional : Expression, val codeBlock : CodeBlock) : Statement() {
     var elseBlock : CodeBlock? = null
     override fun toString() : String {
-        return "(if condition:${conditional} ${codeBlock})"
+        return "(if condition:${conditional} ${codeBlock}${if (elseBlock != null) elseBlock.toString() else ""})"
+    }
+}
+
+class FuncDecl(val name : String, val arguments : List<String>, val body : CodeBlock) : Statement() {
+    override fun toString() : String {
+        return "(func-decl ${name} ${arguments} ${body})"
     }
 }
 
@@ -74,6 +80,7 @@ class Atom(val value : String) : Expression() {
     }
     companion object { val NOOB = Atom("[NOOB]") }
 }
+
 class Label(val name : String) : Expression() { 
     override fun toString() : String {
         return "(LABEL ${name})"
@@ -109,6 +116,12 @@ class UnaryOp(val op : Operator, val expression : Expression) : Expression() {
 
     override fun toString() : String {
         return "(unary_op ${op} ${expression})"
+    }
+}
+
+class FuncCall(val name : String, val expressions : List<Expression>) : Expression() {
+    override fun toString() : String {
+        return "(call ${expressions})"
     }
 }
 
@@ -196,8 +209,8 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
             this.visit(ctx.logical())
         else if (ctx.unary_op() != null)
             this.visit(ctx.unary_op())
-        //else if (ctx.func_call() != null)
-        //    this.visit(ctx.func_call())
+        else if (ctx.func_call() != null)
+            this.visit(ctx.func_call())
         else
             throw Exception("Somehow expression ${ctx} didn't generate a node")
     }
@@ -217,6 +230,14 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
     
 	override fun visitAssignment(ctx: lolcodeParser.AssignmentContext) : Node {
         return Assignment(ctx.LABEL().text, this.visit(ctx.expression()) as Expression)
+    }
+
+    override fun visitFunc_decl(ctx: lolcodeParser.Func_declContext) : Node {
+        var argNames : MutableList<String> = mutableListOf()
+        for (node in ctx.LABEL()) {
+            argNames.add(node.text)
+        }
+        return FuncDecl(ctx.name.text, argNames, this.visit(ctx.code_block()) as CodeBlock)
     }
 
     override fun visitMaths(ctx: lolcodeParser.MathsContext) : Node {
@@ -297,6 +318,14 @@ class ASTVisitor() : lolcodeBaseVisitor<Node>() {
 
         val expr = visit(ctx.expression()) as Expression
         return UnaryOp(UnaryOp.Operator.NEG, expr)
+    }
+
+    override fun visitFunc_call(ctx: lolcodeParser.Func_callContext) : Node {
+        val exprs : MutableList<Expression> = mutableListOf()
+        for (ex in ctx.expression()) {
+            exprs.add(this.visit(ex) as Expression)
+        }
+        return FuncCall(ctx.name.text, exprs)
     }
 }
 

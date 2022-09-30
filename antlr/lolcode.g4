@@ -62,31 +62,7 @@ loop
    : 'IM IN YR' LABEL 'WILE' expression code_block 'IM OUTTA YR' LABEL
    ;
 
-/*
-x, O RLY?
-   YA RLY VISIBLE x MKAY? 
-OIC
-
-x, O RLY?
-   YA RLY ... 
-   NO WAI ...
-OIC
-
-FAIL, O RLY?
-   YA RLY
-      VISIBLE "5a"
-   MEBBE EITHER OF FAIL AN FAIL
-      VISIBLE "5b"
-   MEBBE BOTH OF WIN AN FAIL
-      VISIBLE "5c"
-   MEBBE ANY OF FAIL AN FAIL AN FAIL AN FAIL AN WIN MKAY
-      VISIBLE "5d"
-   NO WAI
-      VISIBLE "5e"
-OIC
- */
 if_block
-//   : expression ', O RLY?' 'YA RLY' code_block else_if_block 'OIC'
    : expression ', O RLY?' 'YA RLY' code_block 'OIC'
    | expression ', O RLY?' 'YA RLY' code_block 'NO WAI' elseBlock=code_block 'OIC'
    ;
@@ -111,11 +87,9 @@ expression
    | comparison
    | logical
    | unary_op
+   | func_call
    | atom=ATOM
    | label=LABEL
-   /*
-   | func_call
-   */
    ;
 
 maths
@@ -136,11 +110,9 @@ unary_op
    : 'NOT' expression
    ;
 
-/*
 func_call
-   : LABEL expression+ 'MKAY?'
+   : name=LABEL expression+ 'MKAY?'
    ;
- */   
 
 ATOM
    : 'WIN'

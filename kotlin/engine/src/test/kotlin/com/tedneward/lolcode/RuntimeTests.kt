@@ -27,16 +27,29 @@ class RuntimeTests {
     @Test
     fun testVariantBasics() {
         val v = Variant(0)
+        assertEquals(0L, v.value)
+        assertEquals(Variant.TYPE.NUMBR, v.type)
 
         assertEquals("0", v.asString())
-        assertEquals(0, v.asInt64())
+        assertEquals(0L, v.asInt64())
         assertEquals(0.0, v.asDouble())
-        assertEquals(false, v.asBoolean())
+        assertFalse(v.asBoolean())
         assertEquals("[0 (NUMBR)]", v.toString())
+
+        val v2 = Variant("0")
+        assertEquals(0L, v2.value)
+        assertEquals(Variant.TYPE.NUMBR, v2.type)
+
+        assertEquals(0L, v2.asInt64())
+        assertFalse(v2.asBoolean())
+        assertEquals("[0 (NUMBR)]", v2.toString())
     }
     @Test fun testVariantNOOB() {
         val v = Variant()
         assertEquals("[NOOB]", v.toString())
+
+        try { assertFalse(v.asBoolean())  }
+        catch (ex : Exception) { assertTrue(false, "We should be able to convert NOOB to false") }
 
         try { v.asString(); assertTrue(false, "Should never get here") }
         catch (ex : Exception) { assertEquals("CANT CONVER NOOB", ex.message) }
@@ -46,9 +59,6 @@ class RuntimeTests {
 
         try { v.asDouble(); assertTrue(false, "Should never get here")  }
         catch (ex : Exception) { assertEquals("CANT CONVER NOOB", ex.message) }
-
-        try { assertFalse(v.asBoolean())  }
-        catch (ex : Exception) { assertTrue(false, "We should be able to convert NOOB to false") }
     }
     @Test fun strings() {
         val v1 = Variant("This is a test")
