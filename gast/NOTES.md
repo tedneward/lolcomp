@@ -51,6 +51,16 @@ Node: base class for all AST nodes
 
 So let's work with that, and build out something that's not quite so tightly tied to syntax:
 
+Steps/future work
+
+* Basic procedures (variables, procedures)
+* Basic OO types (classes w/fields, methods)
+* Exception-handling
+
+* Custom operators ?
+* Overloaded operators ?
+
+
 ```
 **Node**: base AST node
 +-- **Block**: collection of Expressions; yields a value; holds an associated Scope
@@ -65,6 +75,8 @@ So let's work with that, and build out something that's not quite so tightly tie
     +-- **LoopExpression**: conditional block execution; consists of condition, Block; return = collection value containing each value returned by the executed Block
     +-- **FunctionExpression**: function definition; optional name, arguments, block; return = executed Block value
 +-- **Identifier**: a name within the code
++-- **TypeDefinition**?: base for defining new types?
+    +-- **ClassDef**?
 
 **SymbolTable**: a single-level mapping of names/symbols to current values
 
@@ -100,7 +112,8 @@ Add x and y, each holding a value
 Define add, call it
 ```
 <Block>
-    <Function name="add" arguments="lhs, rhs">
+    <Function arguments="lhs, rhs">
+        <Identifier>add</>
         <Block>
             <Binary>
                 <Add>
@@ -110,11 +123,18 @@ Define add, call it
             </>
         <Block>
     </>
-    <Binding name="x"> <Literal>2</> </>
-    <Binding name="y"> <Literla>3</> </>
-    <Call name="add">
+    <Binding> <Identifier>x</> <Literal>2</> </>
+    <Binding> <Identifier>y</> <Literla>3</> </>
+    <Call>
+        <Identifier>add</> <!-- how do we reference function literals? -->
         <Symbol> <Identifier>x</> />
         <Symbol> <Identifier>y</> />
     </>
 </>
 ```
+
+
+
+
+
+
