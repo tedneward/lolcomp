@@ -28,13 +28,7 @@ public class Module : Node
 
     public override string SExpr 
     { 
-        get
-        {
-            string retval = "(" + ")";
-            foreach (var stmt in Statements)
-                retval += stmt.SExpr;
-            return retval;
-        } 
+        get { return Statements.Aggregate("(", (acc, stmt) => acc + stmt.SExpr ) + ")"; } 
     }
 }
 
@@ -70,14 +64,7 @@ public class Block : Expression
 
     public override string SExpr 
     { 
-        get 
-        {
-            string retval = "(block ";
-            foreach (var stmt in Statements)
-                retval += stmt.SExpr;
-            retval += ")";
-            return retval;
-        }
+        get { return Statements.Aggregate("(block ", (acc, x) => acc += x.SExpr) + ")"; }
     }
 }
 
@@ -130,18 +117,26 @@ public class AdditionOperator : BinaryOperator
 public class SubtractionOperator : BinaryOperator
 {
     public SubtractionOperator(Expression left, Expression right) : base(left, right) { } 
+
+    public override string SExpr { get { return "(subtraction-operator " + Left.SExpr + " " + Right.SExpr + ")"; } }
 }
 public class MultiplicationOperator : BinaryOperator
 {
     public MultiplicationOperator(Expression left, Expression right) : base(left, right) { } 
+
+    public override string SExpr { get { return "(multiplication-operator " + Left.SExpr + " " + Right.SExpr + ")"; } }
 }
 public class DivisionOperator : BinaryOperator
 {
     public DivisionOperator(Expression left, Expression right) : base(left, right) { } 
+
+    public override string SExpr { get { return "(division-operator " + Left.SExpr + " " + Right.SExpr + ")"; } }
 }
 public class ModuloOperator : BinaryOperator
 {
     public ModuloOperator(Expression left, Expression right) : base(left, right) { } 
+
+    public override string SExpr { get { return "(modulo-operator " + Left.SExpr + " " + Right.SExpr + ")"; } }
 }
 // Comparisons: GTOp, GTEOp, LTOp, LTEOp, EqualsOp, NotEqualsOp
 public class AssignmentOperator : BinaryOperator

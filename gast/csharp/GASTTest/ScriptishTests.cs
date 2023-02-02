@@ -30,11 +30,25 @@ public class ScriptishTests
         // }
         var block = new GAST.Block();
         var x = new GAST.Variable("x");
+        block.Statements.Add(x);
         var assignX = new GAST.AssignmentOperator(x, new GAST.Literal("2"));
+        block.Statements.Add(assignX);
+
         var y = new GAST.Variable("y");
-        var assignY = new GAST.AssignmentOperator(x, new GAST.Literal("3"));
+        block.Statements.Add(y);
+        var assignY = new GAST.AssignmentOperator(y, new GAST.Literal("3"));
+        block.Statements.Add(assignY);
+
         var z = new GAST.Variable("z");
-        var assignZ = new GAST.AdditionOperator(x, y);
-        block.Statements.Add();
+        block.Statements.Add(z);
+        var assignZ = new GAST.AssignmentOperator(z, new GAST.AdditionOperator(x, y));
+        block.Statements.Add(assignZ);
+        
+        System.Console.WriteLine(block.SExpr);
+        Assert.Equal("(block " +
+            "(variable x)" + "(assignment-operator (variable x) (literal 2))" +
+            "(variable y)" + "(assignment-operator (variable y) (literal 3))" +
+            "(variable z)" + "(assignment-operator (variable z) (addition-operator (variable x) (variable y)))" +
+        ")", block.SExpr);
     }
 }
