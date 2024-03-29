@@ -45,6 +45,8 @@ clean:
 	cd java; gradle clean; cd ..
 	rm fsharp/lib/LOLCODEParser.dll
 	cd fsharp; dotnet clean; cd ..
+	cd python; clean.sh; cd ..
+	
 
 # ========== Kotlin Interpreter
 #
@@ -94,3 +96,10 @@ fsharptest: fsharpbuild
 
 # ========== C++ Interpreter
 #
+
+# ========== Python (Interpreter, Transpiler, ASTCompiler)
+# 
+python:
+	echo ========== Building Python....
+	cd python; build.sh; cd ..
+
