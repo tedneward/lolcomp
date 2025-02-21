@@ -75,4 +75,5 @@ class ScriptTests {
     @Test fun mathsExample() { executeExampleFile("maths") }
     @Test fun moremathsExample() { executeExampleFile("moremaths") }
     @Test fun negnumbrsExample() { executeExampleFile("negnumbrs") }
+    @Test fun simplefun() { executeExampleFile("simplefun") }
 }

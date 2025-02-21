@@ -172,4 +172,30 @@ class RuntimeTests {
         assertEquals("NOT WIZZYRD", strVar.not().asString())
         assertEquals("NOT NOT WIZZYRD", strVar.not().not().asString())
     }
+
+    @Test fun newFrameIsEmpty() {
+        val frame = Frame()
+        assertFalse(frame.peek("non-existent"))
+    }
+    @Test fun newFrameCanHoldAVar() {
+        val frame = Frame()
+        frame.put("x", Variant(5))
+        assertTrue(frame.peek("x"))
+        assertEquals(frame.get("x"), Variant(5))
+    }
+    @Test fun frameCanBeInitialized() {
+        val vars = mapOf("x" to Variant(5), "y" to Variant(12))
+        val frame = Frame(vars)
+        assertEquals(frame.get("x"), Variant(5))
+        assertEquals(frame.get("y"), Variant(12))
+    }
+    @Test fun framesStack() {
+        val frame = Frame(mapOf("x" to Variant(5), "y" to Variant(12)))
+        assertEquals(frame.get("x"), Variant(5))
+        assertEquals(frame.get("y"), Variant(12))
+
+        val nestedFrame = Frame(mapOf(), frame)
+        assertEquals(nestedFrame.get("x"), Variant(5))
+        assertEquals(nestedFrame.get("y"), Variant(12))
+    }
 }

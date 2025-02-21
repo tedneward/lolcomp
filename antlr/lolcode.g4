@@ -47,7 +47,7 @@ declaration
    ;
 
 print_block
-   : 'VISIBLE' expression* 'MKAY?'? 
+   : 'VISIBLE' expression* 'MKAY?'?
    ;
 
 input_block
@@ -83,11 +83,11 @@ import
 */
 
 expression
-   : maths
+   : func_call
+   | maths
    | comparison
    | logical
    | unary_op
-   | func_call
    | atom=ATOM
    | label=LABEL
    ;
@@ -111,7 +111,7 @@ unary_op
    ;
 
 func_call
-   : name=LABEL expression+ 'MKAY?'
+   : name=LABEL (('YR' expression) ('AN YR' expression)*)? 'MKAY?'
    ;
 
 ATOM

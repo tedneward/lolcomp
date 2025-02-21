@@ -10,26 +10,61 @@ import com.tedneward.lolcode.ast.*
 
 // ====================================
 // Interpreter
-typealias Scope = MutableMap<String, Variant>
+class Frame(val initial : Map<String, Variant> = mapOf(), 
+            val enclosing : Frame? = null) {
+    val table : MutableMap<String,Variant> = mutableMapOf()
+
+    init {
+        initial.forEach { entry -> table.put(entry.key, entry.value) }
+    }
+
+    fun peek(name : String) : Boolean {
+        if (table.containsKey(name))
+            return true
+        else if (enclosing != null) 
+            return enclosing.peek(name)
+        else
+            return false
+    }
+    fun put(name : String, value : Variant) { 
+        table.put(name, value)
+    }
+    fun get(name : String) : Variant { 
+        return if (table.get(name) != null) table.get(name)!! else enclosing?.get(name)!!
+    }
+    override fun toString() : String {
+        return "[enclosing:${enclosing?.toString()} ${table.toString()}]"
+    }
+}
 
 class Interpreter {
     var program : Program = Program()
     var ioOut : java.io.PrintStream = System.out
     var ioIn : java.io.InputStream = System.`in`
 
+    // Our declared functions
+    //
+    // TODO: Explore storing functions in the stack, which means the stack
+    // needs to be refactored to be a <String, Variant|FuncDecl> or Variants
+    // need to be able to store FuncDecls or... something
+    val functions : MutableMap<String, FuncDecl> = mutableMapOf()
+
     // Our stack frame management
     //
-    val stack = Stack<Scope>()
+    val stack = Stack<Frame>()
     fun pushScope() {
-        stack.push(mutableMapOf())
+        val newFrame = Frame(mapOf(), if (stack.size != 0) stack.peek() else null)
+        stack.push(newFrame)
+    }
+    fun pushScope(initial : Map<String,Variant>) {
+        val newFrame = Frame(initial, if (stack.size != 0) stack.peek() else null)
+        stack.push(newFrame)
     }
     fun lookup(name : String) : Variant {
-        stack.asReversed().forEach { scope ->
-            if (scope.keys.contains(name))
-                return scope.get(name)!!
-        }
-        
-        throw Exception("NUTHIN THERE CALT ${name}");
+        return if (stack.peek().peek(name))
+            stack.peek().get(name)
+        else
+            throw Exception("NUTHIN THERE CALT ${name}");
     }
     fun store(name : String, value : Variant) {
         stack.peek().put(name, value)
@@ -51,12 +86,20 @@ class Interpreter {
         evaluate(this.program.codeBlock)
     }
 
-    fun evaluate(codeBlock : CodeBlock) {
+    fun evaluate(codeBlock : CodeBlock) : Variant {
         pushScope()
+
+        //locals.forEach { store(it.key, it.value) }
 
         for (stmt in codeBlock.statements) {
             evaluate(stmt)
+
+            // TODO: 'GTFO' is immediate return NOOB
+            // TODO: 'FOUND YR {name}' is a return-with-value
         }
+
+        // If no explicit return is set, return the value of the local "IT"
+        return Variant(null)
     }
 
     fun evaluate(stmt : Statement) {
@@ -86,15 +129,18 @@ class Interpreter {
                 }
             }
             is Conditional -> {
-                print("Evaluating if: ${stmt.conditional}: ")
                 if (evaluate(stmt.conditional).asBoolean()) {
-                    println("TRUE")
                     evaluate(stmt.codeBlock)
                 }
                 else if (stmt.elseBlock != null) {
-                    println("FALSE")
                     evaluate(stmt.elseBlock as CodeBlock)
                 }
+            }
+            is FuncDecl -> {
+                // TODO: Sanity-check for duplication
+                // ... or, just go with last definition wins and call it a day
+
+                functions.put(stmt.name, stmt)
             }
         }
     }
@@ -195,6 +241,33 @@ class Interpreter {
                     else ->
                         throw Exception("Implementation error: Unrecognized logical: ${expr}")
                 }
+            is FuncCall -> {
+                // Validate we're calling an actual function
+                if (functions[expr.name] == null)
+                    throw Exception("YR CALL IZ BOGUS: ${expr.name} not defined")
+
+                val func = functions[expr.name]!!
+
+                // Validate that arguments match up with parameters
+                val numArgs = expr.arguments.count()
+                val numParams = func.parameters.count()
+                if (numArgs != numParams)
+                    throw Exception("YR CALL IZ BOGUS: ${numParams} expected, ${numArgs} provided")
+
+                // Extract the arguments to the call
+                val rawargs : List<Variant> = expr.arguments.map {
+                    evaluate(it)
+                }
+                // Zip them together with the parameter names
+                val args : MutableMap<String, Variant> = mutableMapOf()
+                for (idx in 0..numParams) {
+                    args.put(func.parameters[idx], rawargs[idx])
+                }
+
+                // evaluate the code block with the arguments passed in
+                evaluate(func.body) //, args)
+                return Variant(null)    // return null from all functions for now
+            }
             else ->
                 throw Exception("Unrecognized expression: ${expr}")
         }
