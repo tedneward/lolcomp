@@ -1,8 +1,8 @@
-all: antlr test kotlin csharp #java fsharp python ruby cpp
+all: antlr test #kotlin csharp java fsharp python ruby cpp
 
 # ======== ANTLR grammar-based source generation
 #
-antlr: antlrbuild antlrtest jarbuild clrbuild
+antlr: antlrbuild antlrtest jarbuild clrbuild #cppbuild
 
 antlrbuild:
 	echo ========== Building ANTLR 
@@ -24,6 +24,11 @@ clrbuild:
 	cp antlr/clr/bin/Debug/net6.0/LOLCODEParser.dll csharp/lib
 	cp antlr/clr/bin/Debug/net6.0/LOLCODEParser.dll fsharp/lib
 
+cppbuild:
+	echo ========== Building ANTLR Native/C/C++
+	cd antlr/cpp; make; cd ../..
+#	cp ...?
+
 # ========== Test everything
 #
 test: kotlintest csharptest javatest
@@ -40,6 +45,8 @@ clean:
 	cd java; gradle clean; cd ..
 	rm fsharp/lib/LOLCODEParser.dll
 	cd fsharp; dotnet clean; cd ..
+	cd python; clean.sh; cd ..
+	
 
 # ========== Kotlin Interpreter
 #
@@ -89,4 +96,10 @@ fsharptest: fsharpbuild
 
 # ========== C++ Interpreter
 #
-cpp:
+
+# ========== Python (Interpreter, Transpiler, ASTCompiler)
+# 
+python:
+	echo ========== Building Python....
+	cd python; build.sh; cd ..
+
