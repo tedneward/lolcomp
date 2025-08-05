@@ -4,9 +4,9 @@ env/
 .env/
 .venv/
 
-bin/
-include/
-lib/
+bin
+include
+lib
 lib64
 pyvenv.cfg
 

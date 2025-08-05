@@ -5,9 +5,6 @@ from lolcode.lolcodeParser import lolcodeParser
 from lolcode.lolcodeVisitor import lolcodeVisitor
 
 def main(argv):
-    if len(sys.argv) < 2:
-        print("Specify an incoming file to transpile!")
-        return
 
     incoming = FileStream(sys.argv[1])
     lexer = lolcodeLexer(incoming)
@@ -16,6 +13,13 @@ def main(argv):
     tree = parser.program()
     print(tree.toStringTree(recog=parser))
 
+    ast = ASTParser().parse_file(sys.argv[1])
+    print(ast)
+
 if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("Specify an incoming file to transpile!")
+        return
+
     main(sys.argv)
 
