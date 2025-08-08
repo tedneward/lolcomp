@@ -67,7 +67,10 @@ class Interpreter():
 
     def statement(self, stmt: Statement):
         """Execute a statement"""
-        if isinstance(stmt, Declaration):
+        if isinstance(stmt, Expression):
+            # Expressions are evaluated in the context of the current scope
+            self.evaluate_expression(stmt)
+        elif isinstance(stmt, Declaration):
             self.declaration(stmt)
         elif isinstance(stmt, Assignment):
             self.assignment(stmt)
@@ -81,9 +84,6 @@ class Interpreter():
             self.loop_statement(stmt)
         elif isinstance(stmt, FunctionDecl):
             self.function_declaration(stmt)
-        elif isinstance(stmt, Expression):
-            # Expressions are evaluated in the context of the current scope
-            self.evaluate_expression(stmt)
         else:
             raise RuntimeError(f"Unknown statement type: {type(stmt)}")
 
@@ -170,7 +170,9 @@ class Interpreter():
     def evaluate_expression(self, expr: 'Expression'):
         """Evaluate an expression"""
         if isinstance(expr, Variable):
-            return self.current_scope().vars.get(expr.name, None)
+            if expr.name not in self.current_scope().vars:
+                raise RuntimeError(f"Variable '{expr.name}' not declared")
+            return self.current_scope().vars[expr.name]
         elif isinstance(expr, Literal):
             return expr.value
         elif isinstance(expr, MathExpr):
@@ -206,13 +208,15 @@ class Interpreter():
                 raise RuntimeError(f"Unknown unary operation: {expr.op}")
         # Handle function calls
         elif isinstance(expr, FunctionCall):
-            func_name = expr.name
-            if func_name not in self.current_scope().funcs:
-                raise RuntimeError(f"Function '{func_name}' not declared")
-            func = self.current_scope().funcs[func_name]
-            args = [self.evaluate_expression(arg) for arg in expr.args]
-            return func(*args)
-        # Add more expression types as needed
+            # Check if this is actually a variable reference first
+            if not expr.arguments and expr.name in self.current_scope().vars:
+                return self.current_scope().vars[expr.name]
+            # Otherwise treat it as a function call
+            if expr.name not in self.current_scope().funcs:
+                raise RuntimeError(f"Function '{expr.name}' not declared")
+            func = self.current_scope().funcs[expr.name]
+            args = [self.evaluate_expression(arg) for arg in expr.arguments]
+            return self.call_function(func, args)
         else:
             raise RuntimeError(f"Unknown expression type: {type(expr)}")
 
@@ -220,11 +224,13 @@ class Interpreter():
         """Evaluate a math operation"""
         if op == MathOp.ADD:
             return left + right
-        elif op == MathOp.SUBTRACT:
+        elif op == MathOp.SUB:
             return left - right
-        elif op == MathOp.MULTIPLY:
+        elif op == MathOp.MUL:
             return left * right
-        elif op == MathOp.DIVIDE:
+        elif op == MathOp.DIV:
+            return left / right
+        elif op == MathOp.MOD:
             return left / right
         else:
             raise RuntimeError(f"Unknown math operation: {op}")

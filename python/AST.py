@@ -3,11 +3,11 @@ from typing import List, Optional, Union
 from enum import Enum, auto
 
 class MathOp(Enum):
-    PRODUCT = "PRODUKT OF"
-    QUOTIENT = "QUOSHUNT OF"
+    MUL = "PRODUKT OF"
+    DIV = "QUOSHUNT OF"
     MOD = "MOD OF"
-    SUM = "SUM OF"
-    DIFF = "DIFF OF"
+    ADD = "SUM OF"
+    SUB = "DIFF OF"
 
 class ComparisonOp(Enum):
     EQUAL = "BOTH SAEM"

@@ -36,4 +36,12 @@ HAI 1.2
 			VISIBLE "5b"
 	OIC
 
+	1, O RLY?
+		YA RLY
+			VISIBLE "6a"
+		NO WAI
+			VISIBLE "6b"
+	OIC
+
+
 KTHXBYE

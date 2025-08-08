@@ -4,8 +4,11 @@ from lolcode.lolcodeLexer import lolcodeLexer
 from lolcode.lolcodeParser import lolcodeParser
 from lolcode.lolcodeVisitor import lolcodeVisitor
 
-def main(argv):
+# Transpiler takes the AST nodes returned from ASTParser
+# and transpiles it into C suitable for compilation.
 
+
+def main(argv):
     incoming = FileStream(sys.argv[1])
     lexer = lolcodeLexer(incoming)
     tokens = CommonTokenStream(lexer)

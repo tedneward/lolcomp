@@ -87,10 +87,8 @@ class Parser(lolcodeVisitor):
 
     def visitExpression(self, ctx: lolcodeParser.ExpressionContext) -> Expression:
         """Convert an expression"""
-        # In LOLCODE, a label by itself is always a variable reference
-        if ctx.label and not (ctx.maths() or ctx.comparison() or ctx.logical() or ctx.unary_op() or ctx.func_call()):
-            return Variable(ctx.LABEL().getText())
-        elif ctx.maths():
+        # Handle each type of expression
+        if ctx.maths():
             return self.visit(ctx.maths())
         elif ctx.comparison():
             return self.visit(ctx.comparison())
@@ -99,7 +97,12 @@ class Parser(lolcodeVisitor):
         elif ctx.unary_op():
             return self.visit(ctx.unary_op())
         elif ctx.func_call():
-            return self.visit(ctx.func_call())
+            # Only visit func_call if it's actually a function call with MKAY?
+            if 'MKAY?' in ctx.getText():
+                return self.visit(ctx.func_call())
+            else:
+                # If it's just a label, treat it as a variable
+                return Variable(ctx.func_call().name.text)
         elif ctx.atom:
             # Handle literal values
             value = ctx.ATOM().getText()
@@ -118,6 +121,9 @@ class Parser(lolcodeVisitor):
                     return Literal(int(value))
                 except ValueError:
                     return Literal(value)
+        elif ctx.label:
+            # A bare label is always a variable reference
+            return Variable(ctx.LABEL().getText())
         else:
             raise ValueError(f"Unhandled expression type: {ctx.getText()}")
 
